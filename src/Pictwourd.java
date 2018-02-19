@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class Pictwourd {
   public static void main(String[] args) throws Exception {
-    int numOfThreads = 1; // the number of thread used.
+    int numOfThreads = 8; // the number of thread used.
     // Checking if arg[0] is there and if it is a directory.
     boolean passed = false;
     if (args.length > 0) {
@@ -40,7 +40,6 @@ public class Pictwourd {
     indexer.run();
 
     System.out.println("Finished indexing.");
-
-    System.exit(1);
+    System.exit(0);
   }
 }

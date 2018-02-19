@@ -30,11 +30,14 @@
 
 package liredemo.indexing;
 
+/*
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifReader;
 import com.drew.metadata.exif.ExifThumbnailDirectory;
+*/
+
 import net.semanticmetadata.lire.builders.DocumentBuilder;
 import org.apache.lucene.document.Document;
 
@@ -160,7 +163,7 @@ public class ParallelIndexer implements Runnable {
         }
 
         private BufferedImage readFile(String path) throws IOException {
-            BufferedImage image = null;
+            /*
             if (path.toLowerCase().endsWith(".jpg")) {
                 FileInputStream jpegFile = new FileInputStream(path);
                 try {
@@ -181,13 +184,17 @@ public class ParallelIndexer implements Runnable {
             }
             // Fallback & PNGs:
             if (image == null)
+            */
+                BufferedImage image = null;
+
                 try {
                     image = ImageIO.read(new File(path));
                 } catch (Exception e) {
                     System.err.println("Error reading file " + path + "\n\t" + e.getMessage());
                     e.printStackTrace();
                 }
-            return image;
+            
+                return image;
         }
     }
 
