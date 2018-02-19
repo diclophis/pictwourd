@@ -4,14 +4,18 @@
 import net.semanticmetadata.lire.builders.DocumentBuilder;
 //import net.semanticmetadata.lire.builders.DocumentBuilderFactory;
 
+import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
+import net.semanticmetadata.lire.imageanalysis.features.global.AutoColorCorrelogram;
+import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
+import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
+import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
+
 import java.io.InputStream;
 import java.io.File;
 import java.io.IOException;
 
 public class Pictwourd {
   public static void main(String[] args) throws Exception {
-
-/*
     int numOfThreads = 1; // the number of thread used.
     // Checking if arg[0] is there and if it is a directory.
     boolean passed = false;
@@ -36,7 +40,6 @@ public class Pictwourd {
     indexer.run();
 
     System.out.println("Finished indexing.");
-*/
 
     System.exit(1);
   }
