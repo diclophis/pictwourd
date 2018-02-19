@@ -14,11 +14,11 @@ classes = $(patsubst %,build/%, $(dot_class))
 all: $(classes)
 
 run: all
-	$(JAVA) -Xmx400m -classpath lib/lire.jar $(BUILD) Pictwourd
+	$(JAVA) -Xmx400m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/TestImages
 
 clean:
-	rm -f $(BUILD)
+	rm -Rf $(BUILD)
 	mkdir -p $(BUILD)
 
-$(BUILD)/%.class: $(sources)
+$(BUILD)/%.class: %.java
 	$(JAVAC) -cp $(jars_list) -d $(BUILD) $<
