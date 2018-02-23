@@ -1,6 +1,7 @@
 //
 
-//import net.semanticmetadata.lire.builders.DocumentBuilder;
+import net.semanticmetadata.lire.builders.DocumentBuilder;
+
 //import net.semanticmetadata.lire.builders.DocumentBuilderFactory;
 
 //import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
@@ -12,9 +13,24 @@ import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
 import net.semanticmetadata.lire.imageanalysis.features.global.*;
 import net.semanticmetadata.lire.imageanalysis.features.global.joint.JointHistogram;
 
+
+import net.semanticmetadata.lire.searchers.ImageSearchHits;
+import net.semanticmetadata.lire.searchers.ImageSearcher;
+import net.semanticmetadata.lire.searchers.GenericFastImageSearcher;
+import net.semanticmetadata.lire.filters.RerankFilter;
+import net.semanticmetadata.lire.utils.FileUtils;
+import net.semanticmetadata.lire.utils.LuceneUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.store.FSDirectory;
+
 import java.io.InputStream;
 import java.io.File;
 import java.io.IOException;
+
+import java.nio.file.Paths;
 
 public class Pictwourd {
   public static void main(String[] args) throws Exception {
@@ -33,9 +49,12 @@ public class Pictwourd {
       System.exit(1);
     }
 
+		String indexPath = "index";
+		String imagesPath = args[0];
+
       int count = 0;
       long time = System.currentTimeMillis();
-      ParallelIndexer pin = new ParallelIndexer(8, "index", args[0]);
+      ParallelIndexer pin = new ParallelIndexer(8, indexPath, args[0]);
 
       pin.addExtractor(ColorLayout.class);
       pin.addExtractor(CEDD.class);
@@ -57,6 +76,7 @@ public class Pictwourd {
 
       //pin.setCustomDocumentBuilder(MetadataBuilder.class);
 
+      /*
       Thread t = new Thread(pin);
       t.start();
       while (!pin.hasEnded()) {
@@ -69,8 +89,25 @@ public class Pictwourd {
       } catch (InterruptedException e) {
           e.printStackTrace();
       }
+      */
 
     System.out.println("Finished indexing.");
+
+    // search
+    System.out.println("---< searching >-------------------------");
+    IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
+    Document document = reader.document(6);
+    ImageSearcher searcher = new GenericFastImageSearcher(100, AutoColorCorrelogram.class, true, reader);
+    ImageSearchHits hits = searcher.search(document, reader);
+
+    // rerank
+    System.out.println("---< filtering >-------------------------");
+    RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
+    hits = filter.filter(hits, reader, document);
+
+    // output
+    FileUtils.saveImageResultsToHtml("filtertest", hits, document.getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0], reader);
+
     System.exit(0);
   }
 }
