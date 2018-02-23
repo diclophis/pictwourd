@@ -21,4 +21,4 @@ clean:
 	mkdir -p $(BUILD)
 
 $(BUILD)/%.class: %.java
-	$(JAVAC) -cp $(jars_list):. -d $(BUILD) -sourcepath src $<
+	$(JAVAC) -Xlint:unchecked -cp $(jars_list):. -d $(BUILD) -sourcepath src $<

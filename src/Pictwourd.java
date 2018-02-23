@@ -32,6 +32,12 @@ import java.io.IOException;
 
 import java.nio.file.Paths;
 
+import com.google.gson.Gson;
+
+import java.util.Hashtable;
+import java.util.List;
+import java.util.ArrayList;
+
 public class Pictwourd {
   public static void main(String[] args) throws Exception {
     int numOfThreads = 8; // the number of thread used.
@@ -97,7 +103,7 @@ public class Pictwourd {
     System.out.println("---< searching >-------------------------");
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
     Document document = reader.document(6);
-    ImageSearcher searcher = new GenericFastImageSearcher(100, AutoColorCorrelogram.class, true, reader);
+    ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, reader);
     ImageSearchHits hits = searcher.search(document, reader);
 
     // rerank
@@ -107,6 +113,21 @@ public class Pictwourd {
 
     // output
     FileUtils.saveImageResultsToHtml("filtertest", hits, document.getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0], reader);
+
+    Gson gson = new Gson();
+    
+    ArrayList<Hashtable<String, String>> rawIndex = new ArrayList<Hashtable<String, String>>();
+
+    for (int i = 0; i < reader.numDocs(); i++) {
+      String docFile = reader.document(i).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
+      Hashtable<String, String> docu = new Hashtable<String, String>();
+      docu.put("id", String.format("%d", i));
+      docu.put("filename", docFile);
+      rawIndex.add(docu);
+    }
+
+    System.out.println(gson.toJson(rawIndex));
+    System.out.println(gson.toJson(hits));
 
     System.exit(0);
   }
