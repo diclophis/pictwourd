@@ -28,8 +28,6 @@
  *     http://lire-project.net
  */
 
-package liredemo.indexing;
-
 /*
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegProcessingException;
@@ -152,6 +150,8 @@ public class ParallelIndexer implements Runnable {
                     BufferedImage image = readFile(photo);
                     if (image != null) {
                         Document doc = parent.builder.createDocument(image, photo);
+                        System.err.println("reading file " + photo + "\n");
+
                         parent.addDoc(doc, photo);
                     }
                 } catch (Exception e) {
@@ -163,28 +163,6 @@ public class ParallelIndexer implements Runnable {
         }
 
         private BufferedImage readFile(String path) throws IOException {
-            /*
-            if (path.toLowerCase().endsWith(".jpg")) {
-                FileInputStream jpegFile = new FileInputStream(path);
-                try {
-                    Metadata metadata = ImageMetadataReader.readMetadata(jpegFile);
-                    ExifThumbnailDirectory tDir = metadata.getFirstDirectoryOfType(ExifThumbnailDirectory.class);
-//                    byte[] thumb = ((ExifDirectory) metadata.getDirectory(ExifDirectory.class)).getThumbnailData();
-//                    if (thumb != null) image = ImageIO.read(new ByteArrayInputStream(thumb));
-//                    System.out.print("Read from thumbnail data ... ");
-//                    System.out.println(image.getWidth() + " x " + image.getHeight());
-                } catch (JpegProcessingException e) {
-                    System.err.println("Could not extract EXIF data for " + path);
-                    System.err.println("\t" + e.getMessage());
-                } catch (Exception e) {
-                    System.err.println("Could not extract EXIF data for " + path);
-                    System.err.println("\t" + e.getMessage());
-                }
-                jpegFile.close();    // patch by Simon Micollier
-            }
-            // Fallback & PNGs:
-            if (image == null)
-            */
                 BufferedImage image = null;
 
                 try {
@@ -197,6 +175,27 @@ public class ParallelIndexer implements Runnable {
                 return image;
         }
     }
-
-
 }
+
+/*
+if (path.toLowerCase().endsWith(".jpg")) {
+    FileInputStream jpegFile = new FileInputStream(path);
+    try {
+        Metadata metadata = ImageMetadataReader.readMetadata(jpegFile);
+        ExifThumbnailDirectory tDir = metadata.getFirstDirectoryOfType(ExifThumbnailDirectory.class);
+//                    byte[] thumb = ((ExifDirectory) metadata.getDirectory(ExifDirectory.class)).getThumbnailData();
+//                    if (thumb != null) image = ImageIO.read(new ByteArrayInputStream(thumb));
+//                    System.out.print("Read from thumbnail data ... ");
+//                    System.out.println(image.getWidth() + " x " + image.getHeight());
+    } catch (JpegProcessingException e) {
+        System.err.println("Could not extract EXIF data for " + path);
+        System.err.println("\t" + e.getMessage());
+    } catch (Exception e) {
+        System.err.println("Could not extract EXIF data for " + path);
+        System.err.println("\t" + e.getMessage());
+    }
+    jpegFile.close();    // patch by Simon Micollier
+}
+// Fallback & PNGs:
+if (image == null)
+*/

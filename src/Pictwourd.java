@@ -1,6 +1,5 @@
 //
 
-
 import net.semanticmetadata.lire.builders.DocumentBuilder;
 //import net.semanticmetadata.lire.builders.DocumentBuilderFactory;
 
@@ -8,7 +7,6 @@ import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
 import net.semanticmetadata.lire.imageanalysis.features.global.AutoColorCorrelogram;
 import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
 import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
-import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
 
 import java.io.InputStream;
 import java.io.File;
