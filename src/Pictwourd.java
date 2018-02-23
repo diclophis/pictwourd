@@ -1,12 +1,16 @@
 //
 
-import net.semanticmetadata.lire.builders.DocumentBuilder;
+//import net.semanticmetadata.lire.builders.DocumentBuilder;
 //import net.semanticmetadata.lire.builders.DocumentBuilderFactory;
 
-import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
-import net.semanticmetadata.lire.imageanalysis.features.global.AutoColorCorrelogram;
-import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
-import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
+//import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
+//import net.semanticmetadata.lire.imageanalysis.features.global.AutoColorCorrelogram;
+//import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
+//import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
+
+import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
+import net.semanticmetadata.lire.imageanalysis.features.global.*;
+import net.semanticmetadata.lire.imageanalysis.features.global.joint.JointHistogram;
 
 import java.io.InputStream;
 import java.io.File;
@@ -29,13 +33,42 @@ public class Pictwourd {
       System.exit(1);
     }
 
-    // use ParallelIndexer to index all photos from args[0] into "index" ... use 6 threads (actually 7 with the I/O thread).
-    ParallelIndexer indexer = new ParallelIndexer(numOfThreads, "index", args[0]);
-    // use this to add you preferred builders. For now we go for CEDD, FCTH and AutoColorCorrelogram
-    indexer.addExtractor(CEDD.class);
-    indexer.addExtractor(FCTH.class);
-    indexer.addExtractor(AutoColorCorrelogram.class);
-    indexer.run();
+      int count = 0;
+      long time = System.currentTimeMillis();
+      ParallelIndexer pin = new ParallelIndexer(8, "index", args[0]);
+
+      pin.addExtractor(ColorLayout.class);
+      pin.addExtractor(CEDD.class);
+      pin.addExtractor(FCTH.class);
+      pin.addExtractor(JCD.class);
+      pin.addExtractor(ScalableColor.class);
+      pin.addExtractor(EdgeHistogram.class);
+      pin.addExtractor(AutoColorCorrelogram.class);
+      pin.addExtractor(Tamura.class);
+      pin.addExtractor(Gabor.class);
+      pin.addExtractor(SimpleColorHistogram.class);
+      pin.addExtractor(OpponentHistogram.class);
+      pin.addExtractor(JointHistogram.class);
+      pin.addExtractor(LuminanceLayout.class);
+      pin.addExtractor(PHOG.class);
+
+      //pin.addExtractor(ACCID.class);
+      //pin.addExtractor(COMO.class);
+
+      //pin.setCustomDocumentBuilder(MetadataBuilder.class);
+
+      Thread t = new Thread(pin);
+      t.start();
+      while (!pin.hasEnded()) {
+        float percentage = (float) pin.getPercentageDone();
+        System.out.println(String.format("%f\n", percentage));
+        Thread.currentThread().sleep(1000);
+      }
+      try {
+          t.join();
+      } catch (InterruptedException e) {
+          e.printStackTrace();
+      }
 
     System.out.println("Finished indexing.");
     System.exit(0);
