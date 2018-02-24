@@ -14,7 +14,7 @@ classes = $(patsubst %,build/%, $(dot_class))
 all: $(classes)
 
 run: all
-	$(JAVA) -Xmx400m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/TestImages
+	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/TestInput001
 
 clean:
 	rm -Rf $(BUILD)

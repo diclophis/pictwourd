@@ -40,7 +40,7 @@ import java.util.ArrayList;
 
 public class Pictwourd {
   public static void main(String[] args) throws Exception {
-    int numOfThreads = 8; // the number of thread used.
+    int numOfThreads = 16; // the number of thread used.
     // Checking if arg[0] is there and if it is a directory.
     boolean passed = false;
     if (args.length > 0) {
@@ -58,31 +58,30 @@ public class Pictwourd {
 		String indexPath = "index";
 		String imagesPath = args[0];
 
-      int count = 0;
-      long time = System.currentTimeMillis();
-      ParallelIndexer pin = new ParallelIndexer(8, indexPath, args[0]);
+    long time = System.currentTimeMillis();
+    ParallelIndexer pin = new ParallelIndexer(numOfThreads, indexPath, args[0]);
 
-      pin.addExtractor(ColorLayout.class);
-      pin.addExtractor(CEDD.class);
-      pin.addExtractor(FCTH.class);
-      pin.addExtractor(JCD.class);
-      pin.addExtractor(ScalableColor.class);
-      pin.addExtractor(EdgeHistogram.class);
-      pin.addExtractor(AutoColorCorrelogram.class);
-      pin.addExtractor(Tamura.class);
-      pin.addExtractor(Gabor.class);
-      pin.addExtractor(SimpleColorHistogram.class);
-      pin.addExtractor(OpponentHistogram.class);
-      pin.addExtractor(JointHistogram.class);
-      pin.addExtractor(LuminanceLayout.class);
-      pin.addExtractor(PHOG.class);
+    pin.addExtractor(ColorLayout.class);
+    pin.addExtractor(CEDD.class);
+    pin.addExtractor(FCTH.class);
+    pin.addExtractor(JCD.class);
+    pin.addExtractor(ScalableColor.class);
+    pin.addExtractor(EdgeHistogram.class);
+    pin.addExtractor(AutoColorCorrelogram.class);
+    pin.addExtractor(Tamura.class);
+    pin.addExtractor(Gabor.class);
+    pin.addExtractor(SimpleColorHistogram.class);
+    pin.addExtractor(OpponentHistogram.class);
+    pin.addExtractor(JointHistogram.class);
+    pin.addExtractor(LuminanceLayout.class);
+    pin.addExtractor(PHOG.class);
 
-      //pin.addExtractor(ACCID.class);
-      //pin.addExtractor(COMO.class);
+    //pin.addExtractor(ACCID.class);
+    //pin.addExtractor(COMO.class);
 
-      //pin.setCustomDocumentBuilder(MetadataBuilder.class);
+    //pin.setCustomDocumentBuilder(MetadataBuilder.class);
 
-      /*
+    if (false) {
       Thread t = new Thread(pin);
       t.start();
       while (!pin.hasEnded()) {
@@ -95,24 +94,12 @@ public class Pictwourd {
       } catch (InterruptedException e) {
           e.printStackTrace();
       }
-      */
+    }
 
     System.out.println("Finished indexing.");
 
-    // search
     System.out.println("---< searching >-------------------------");
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
-    Document document = reader.document(6);
-    ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, reader);
-    ImageSearchHits hits = searcher.search(document, reader);
-
-    // rerank
-    System.out.println("---< filtering >-------------------------");
-    RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
-    hits = filter.filter(hits, reader, document);
-
-    // output
-    FileUtils.saveImageResultsToHtml("filtertest", hits, document.getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0], reader);
 
     Gson gson = new Gson();
     
@@ -124,10 +111,26 @@ public class Pictwourd {
       docu.put("id", String.format("%d", i));
       docu.put("filename", docFile);
       rawIndex.add(docu);
+
+      // search
+      Document document = reader.document(i);
+      ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, reader);
+      ImageSearchHits hits = searcher.search(document, reader);
+
+      // rerank
+      System.out.println("---< filtering >-------------------------");
+      RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
+      hits = filter.filter(hits, reader, document);
+
+      // output
+      FileUtils.saveImageResultsToHtml("filtertest", hits, document.getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0], reader);
+
+      //System.out.println(gson.toJson(hits));
+
+      break;
     }
 
     System.out.println(gson.toJson(rawIndex));
-    System.out.println(gson.toJson(hits));
 
     System.exit(0);
   }
