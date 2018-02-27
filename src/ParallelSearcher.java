@@ -63,7 +63,7 @@ public class ParallelSearcher implements Runnable {
     private int queueCapacity = 200;
     private LinkedBlockingQueue<WorkItem> queue = new LinkedBlockingQueue<>(queueCapacity);
 
-    private int numOfThreads = 32;
+    private int numOfThreads = 64;
 
     private List<Integer> allImageIds = null;
     private ArrayList<Hashtable<String, String>> rawIndex = null;
@@ -173,14 +173,14 @@ public class ParallelSearcher implements Runnable {
                       ImageSearchHits hits = searcher.search(document, this.indexReader);
 
                       // rerank
-                      System.out.println("---< filtering >-------------------------");
+                      //System.out.println("---< filtering >-------------------------");
                       RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
                       hits = filter.filter(hits, this.indexReader, document);
 
                          Writer writer = new BufferedWriter(
                                            new OutputStreamWriter(
 																		         new FileOutputStream(
-                                               String.format("build/%d.json", tmp.getFileNameId())
+                                               String.format("index.manifest/%d.json", tmp.getFileNameId())
                                              )
                                            )
                                          );

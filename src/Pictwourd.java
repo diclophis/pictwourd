@@ -97,7 +97,7 @@ public class Pictwourd {
 
     ParallelSearcher search = new ParallelSearcher(reader);
 
-    if (false) {
+    if (true) {
       Thread t = new Thread(search);
       t.start();
       while (!search.hasEnded()) {
@@ -113,7 +113,7 @@ public class Pictwourd {
     Writer writer = new BufferedWriter(
                       new OutputStreamWriter(
                         new FileOutputStream(
-                          String.format("build/index.json")
+                          String.format("index.manifest/manifest.json")
                         )
                       )
                     );
