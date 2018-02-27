@@ -22,6 +22,10 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 
+import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
+import net.semanticmetadata.lire.imageanalysis.features.global.*;
+import net.semanticmetadata.lire.imageanalysis.features.global.joint.JointHistogram;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
@@ -43,65 +47,30 @@ import net.semanticmetadata.lire.imageanalysis.features.LocalFeature;
 
 import java.util.List;
 
-//import net.semanticmetadata.lire.imageanalysis.features.global.ACCID;
+import net.semanticmetadata.lire.searchers.ImageSearchHits;
+import net.semanticmetadata.lire.searchers.ImageSearcher;
+import net.semanticmetadata.lire.searchers.GenericFastImageSearcher;
+import net.semanticmetadata.lire.filters.RerankFilter;
+
+import com.google.gson.Gson;
 
 public class ParallelSearcher implements Runnable {
     private IndexReader indexReader = null;
     private boolean searchingFinished = false;
 
-    private int overallCount = -1, numImages = -1; //, numSample = -1
-    // Note that you can edit the queue size here. 100 is a good value, but I'd raise it to 200.
+    private int overallCount = -1;
+
     private int queueCapacity = 200;
     private LinkedBlockingQueue<WorkItem> queue = new LinkedBlockingQueue<>(queueCapacity);
 
-/*
-    private boolean useDocValues = false;
-    private Logger log = Logger.getLogger(this.getClass().getName());
-    private ProgressMonitor pm = null;
-    private DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance();
-    private int numOfThreads = DocumentBuilder.NUM_OF_THREADS;
-    private int monitoringInterval = 30; // all xx seconds a status message will be displayed
-    private boolean overWrite = true;   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    private boolean useParallelClustering = true;
-    private boolean lockLists = false;
-    private boolean sampling = false;
-    private boolean appending = false;
-    private boolean globalHashing = false;
-    private GlobalDocumentBuilder.HashingMode globalHashingMode = GlobalDocumentBuilder.HashingMode.BitSampling;
-
-    private IndexWriter writer;
-    private String imageDirectory, indexPath;
-    private File imageList = null;
-    private List<String> allImages, sampleImages;
-
-    private int numOfDocsForCodebooks = 300;
-    private int[] numOfClusters = new int[]{512};
-    private TreeSet<Integer> numOfClustersSet = new TreeSet<Integer>();
-
-    private HashSet<ExtractorItem> GlobalExtractors = new HashSet<ExtractorItem>(10); // default size (16)
-    private HashMap<ExtractorItem, LinkedList<Cluster[]>> LocalExtractorsAndCodebooks = new HashMap<ExtractorItem, LinkedList<Cluster[]>>(10); // default size (16)
-    private HashMap<ExtractorItem, LinkedList<Cluster[]>> SimpleExtractorsAndCodebooks = new HashMap<ExtractorItem, LinkedList<Cluster[]>>(10); // default size (16)
-
-    private Class<? extends DocumentBuilder> customDocumentBuilder = null;
-    private boolean customDocBuilderFlag = false;
-
-    private ConcurrentHashMap<String, List<? extends LocalFeature>> conSampleMap;
-
-    private Class<? extends AbstractAggregator> aggregator = BOVW.class;
-
-    private HashMap<String, Document> allDocuments;
-
-    private ImagePreprocessor imagePreprocessor;
-*/
+    private int numOfThreads = 32;
 
     private List<Integer> allImageIds = null;
     private ArrayList<Hashtable<String, String>> rawIndex = null;
 
     public ParallelSearcher(IndexReader inIndexReader) {
       this.indexReader = inIndexReader;
-    }
 
-    public void run() {
       this.allImageIds = new ArrayList<Integer>();
 
       this.rawIndex = new ArrayList<Hashtable<String, String>>();
@@ -119,6 +88,13 @@ public class ParallelSearcher implements Runnable {
         System.out.println("wtf");
         System.exit(1);
       }
+    }
+
+    public ArrayList getRawIndex() {
+      return this.rawIndex;
+    }
+
+    public void run() {
 
       search();
 
@@ -126,49 +102,37 @@ public class ParallelSearcher implements Runnable {
     }
 
     class Producer implements Runnable {
-        private List<Integer> localList;
+      private List<Integer> localList;
 
-        public Producer(List<Integer> inLocalList) {
-            this.localList = inLocalList;
-            overallCount = 0;
-            queue.clear();
+      public Producer(List<Integer> inLocalList) {
+          this.localList = inLocalList;
+          overallCount = 0;
+          queue.clear();
+      }
+
+      public void run() {
+        Integer next;
+        for (Integer path : localList) {
+          next = path;
+          try {
+            queue.put(new WorkItem(next));
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
         }
 
-        public void run() {
-        /*
-            File next;
-            for (String path : localList) {
-                next = new File(path);
-                try {
-                    int fileSize = (int) next.length();
-                    byte[] buffer = new byte[fileSize];
-                    FileInputStream fis = new FileInputStream(next);
-                    FileChannel channel = fis.getChannel();
-                    MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);
-                    map.load();
-                    map.get(buffer);
-                    queue.put(new WorkItem(path, buffer));
-                    channel.close();
-                    fis.close();
-                } catch (Exception e) {
-                    System.err.println("Could not open " + path + ". " + e.getMessage());
-                }
-            }
-            String path = null;
-            byte[] buffer = null;
-            for (int i = 0; i < numOfThreads * 3; i++) {
-                try {
-                    queue.put(new WorkItem(path, buffer));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-    */
+        Integer path = null;
+        for (int i = 0; i < numOfThreads * 3; i++) {
+          try {
+            queue.put(new WorkItem(path));
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
         }
+      }
     }
 
-
-  class WorkItem {
+    class WorkItem {
       private Integer fileNameId;
 
       public WorkItem(Integer pathId) {
@@ -178,97 +142,60 @@ public class ParallelSearcher implements Runnable {
       public Integer getFileNameId() {
           return fileNameId;
       }
-  }
+    }
 
     class Consumer implements Runnable {
-    /*
-        private LocalDocumentBuilder localDocumentBuilder;
-        private SimpleDocumentBuilder simpleDocumentBuilder;
-        private GlobalDocumentBuilder globalDocumentBuilder;
-        private DocumentBuilder localCustomDocumentBuilder;
-        */
         private IndexReader indexReader;
         private boolean locallyEnded;
 
         public Consumer(IndexReader inIndexReader) {
           this.indexReader = inIndexReader;
-
-        /*
-            this.localDocumentBuilder = new LocalDocumentBuilder(aggregator);
-            this.simpleDocumentBuilder = new SimpleDocumentBuilder(aggregator);
-            this.globalDocumentBuilder = new GlobalDocumentBuilder(globalHashing, globalHashingMode, useDocValues);
-
-            for (Map.Entry<ExtractorItem, LinkedList<Cluster[]>> listEntry : LocalExtractorsAndCodebooks.entrySet()) {
-                this.localDocumentBuilder.addExtractor(listEntry.getKey().clone(), listEntry.getValue());
-            }
-            for (Map.Entry<ExtractorItem, LinkedList<Cluster[]>> listEntry : SimpleExtractorsAndCodebooks.entrySet()) {
-                this.simpleDocumentBuilder.addExtractor(listEntry.getKey().clone(), listEntry.getValue());
-            }
-            for (ExtractorItem globalExtractor : GlobalExtractors) {
-                this.globalDocumentBuilder.addExtractor(globalExtractor.clone());
-            }
-
-            try {
-                if (customDocumentBuilder != null) {
-                    this.localCustomDocumentBuilder = customDocumentBuilder.newInstance();
-                } else this.localCustomDocumentBuilder = new GlobalDocumentBuilder(false);
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-
-            this.locallyEnded = false;
-        */
+          this.locallyEnded = false;
         }
 
         public void run() {
-/*
+            Gson gson = new Gson();
+
             WorkItem tmp = null;
-            Document doc;
-            Field[] fields;
-            BufferedImage image;
             while (!locallyEnded) {
                 try {
                     if (queue.peek()==null) {
-//                        while (queue.remainingCapacity() > 2*queueCapacity/3) Thread.sleep(1000);
                         Thread.sleep((long) ((Math.random()/2+0.5) * 10000)); // sleep for a second if queue is empty.
                     }
                     tmp = queue.take();
-                    if (tmp.getFileName() == null) locallyEnded = true;
+                    if (tmp.getFileNameId() == null) locallyEnded = true;
                     else overallCount++;
-                    if (!locallyEnded) {    //&& tmp != null
-                        image = ImageIO.read(new ByteArrayInputStream(tmp.getBuffer()));
-//                        image = ImageUtils.createWorkingCopy(ImageIO.read(new ByteArrayInputStream(tmp.getBuffer())));
-                        if(imagePreprocessor != null){
-                            image = imagePreprocessor.process(image);
-                        }
-                        doc = localCustomDocumentBuilder.createDocument(image, tmp.getFileName());
-                        fields = globalDocumentBuilder.createDescriptorFields(image);
-                        for (Field field : fields) {
-                            doc.add(field);
-                        }
-                        fields = localDocumentBuilder.createDescriptorFields(image);
-                        for (Field field : fields) {
-                            doc.add(field);
-                        }
-                        fields = simpleDocumentBuilder.createDescriptorFields(image);
-                        for (Field field : fields) {
-                            doc.add(field);
-                        }
-                        writer.addDocument(doc);
-                    }
-                } catch (InterruptedException | IOException e) {
-                    log.severe(e.getMessage() + ": " + tmp!=null?tmp.getFileName():"");
+                    if (!locallyEnded) {
+                      // search
+                      Document document = this.indexReader.document(tmp.getFileNameId());
+
+                      ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, this.indexReader);
+                      ImageSearchHits hits = searcher.search(document, this.indexReader);
+
+                      // rerank
+                      System.out.println("---< filtering >-------------------------");
+                      RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
+                      hits = filter.filter(hits, this.indexReader, document);
+
+                         Writer writer = new BufferedWriter(
+                                           new OutputStreamWriter(
+																		         new FileOutputStream(
+                                               String.format("build/%d.json", tmp.getFileNameId())
+                                             )
+                                           )
+                                         );
+
+												 writer.write(gson.toJson(hits));
+                         writer.close();
+									 }
+                } catch (InterruptedException e) {
                 } catch (Exception e) {
-                    log.severe(e.getMessage() + ": " + tmp!=null?tmp.getFileName():"");
                 }
             }
-*/
         }
-
     }
 
     public boolean search() {
-      int numOfThreads = 1;
 
       try {
         Thread p, c, m;
@@ -288,20 +215,6 @@ public class ParallelSearcher implements Runnable {
           e.printStackTrace();
       }
 
-        // search
-        //Document document = reader.document(i);
-        //ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, reader);
-        //ImageSearchHits hits = searcher.search(document, reader);
-
-        // rerank
-        //System.out.println("---< filtering >-------------------------");
-        //RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
-        //hits = filter.filter(hits, reader, document);
-
-        //// output
-        ////FileUtils.saveImageResultsToHtml(String.format("%04d-filtertest", i), hits, document.getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0], reader);
-
-        ////System.out.println(gson.toJson(hits));
         return true;
     }
 

@@ -2,13 +2,6 @@
 
 import net.semanticmetadata.lire.builders.DocumentBuilder;
 
-//import net.semanticmetadata.lire.builders.DocumentBuilderFactory;
-
-//import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
-//import net.semanticmetadata.lire.imageanalysis.features.global.AutoColorCorrelogram;
-//import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
-//import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
-
 import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
 import net.semanticmetadata.lire.imageanalysis.features.global.*;
 import net.semanticmetadata.lire.imageanalysis.features.global.joint.JointHistogram;
@@ -29,6 +22,7 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.InputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.*;
 
 import java.nio.file.Paths;
 
@@ -101,18 +95,12 @@ public class Pictwourd {
     System.out.println("---< searching >-------------------------");
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 
-    //Gson gson = new Gson();
-    
-
     ParallelSearcher search = new ParallelSearcher(reader);
-
 
     if (false) {
       Thread t = new Thread(search);
       t.start();
       while (!search.hasEnded()) {
-        //float percentage = (float) pin.getPercentageDone();
-        //System.out.println(String.format("%f\n", percentage));
         Thread.currentThread().sleep(1000);
       }
       try {
@@ -122,8 +110,17 @@ public class Pictwourd {
       }
     }
 
+    Writer writer = new BufferedWriter(
+                      new OutputStreamWriter(
+                        new FileOutputStream(
+                          String.format("build/index.json")
+                        )
+                      )
+                    );
 
-    //System.out.println(gson.toJson(rawIndex));
+    Gson gson = new Gson();
+    writer.write(gson.toJson(search.getRawIndex()));
+    writer.close();
 
     System.exit(0);
   }
