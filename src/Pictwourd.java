@@ -101,36 +101,29 @@ public class Pictwourd {
     System.out.println("---< searching >-------------------------");
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 
-    Gson gson = new Gson();
+    //Gson gson = new Gson();
     
-    ArrayList<Hashtable<String, String>> rawIndex = new ArrayList<Hashtable<String, String>>();
 
-    for (int i = 0; i < reader.numDocs(); i++) {
-      String docFile = reader.document(i).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
-      Hashtable<String, String> docu = new Hashtable<String, String>();
-      docu.put("id", String.format("%d", i));
-      docu.put("filename", docFile);
-      rawIndex.add(docu);
+    ParallelSearcher search = new ParallelSearcher(reader);
 
-      // search
-      Document document = reader.document(i);
-      ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, reader);
-      ImageSearchHits hits = searcher.search(document, reader);
 
-      // rerank
-      System.out.println("---< filtering >-------------------------");
-      RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
-      hits = filter.filter(hits, reader, document);
-
-      // output
-      FileUtils.saveImageResultsToHtml("filtertest", hits, document.getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0], reader);
-
-      //System.out.println(gson.toJson(hits));
-
-      break;
+    if (false) {
+      Thread t = new Thread(search);
+      t.start();
+      while (!search.hasEnded()) {
+        //float percentage = (float) pin.getPercentageDone();
+        //System.out.println(String.format("%f\n", percentage));
+        Thread.currentThread().sleep(1000);
+      }
+      try {
+          t.join();
+      } catch (InterruptedException e) {
+          e.printStackTrace();
+      }
     }
 
-    System.out.println(gson.toJson(rawIndex));
+
+    //System.out.println(gson.toJson(rawIndex));
 
     System.exit(0);
   }
