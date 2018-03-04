@@ -11,7 +11,7 @@ all_images.each { |image|
 
   each_chunk = sha256.hexdigest.chars.each_slice(size_of_chunk).collect { |a| a.join }
 
-  dir_part = File.join("index.attic", *each_chunk)
+  dir_part = File.join("build", "index.attic", *each_chunk)
   filename = File.join(dir_part, "00000000.jpg")
 
   unless File.exists?(filename)
