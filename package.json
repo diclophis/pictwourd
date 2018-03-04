@@ -14,6 +14,7 @@
     "@babel/preset-env": "^7.0.0-beta.40",
     "@babel/preset-es2015": "^7.0.0-beta.40",
     "@babel/preset-react": "^7.0.0-beta.40",
+    "@babel/register": "^7.0.0-beta.40",
     "babel-loader": "^8.0.0-beta.0",
     "baobab": "^2.5.1",
     "classnames": "~1.1.4",
@@ -26,7 +27,8 @@
     "webpack": "^2.0"
   },
   "scripts": {
-    "build": "webpack"
+    "pack": "webpack",
+    "build": "nodejs server.js"
   },
   "author": "Jon Bardin"
 }
