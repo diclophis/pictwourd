@@ -4,6 +4,12 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.json$/,
+        use: {
+          loader: 'json-loader'
+        }
+      },
+      {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
