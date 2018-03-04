@@ -13,7 +13,7 @@ const initialData = {}
 export default function() {
   ReactDOMServer.renderToNodeStream(
     <Html initialData={JSON.stringify(initialData)}>
-      <App {...initialData} name="World" />
+      <App {...initialData} />
     </Html>
   ).pipe(indexFile);
 };

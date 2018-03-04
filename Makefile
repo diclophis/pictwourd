@@ -28,21 +28,20 @@ all:
 	echo $(BUILD)/$(IMAGE_TAG)
 
 reset:
-	rm -Rf index index.config index.manifest
+	rm -Rf $(BUILD)/index $(BUILD)/index.config $(BUILD)/index.manifest
 
 sync:
-	rsync -azP -v -r index* ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/
+	rsync -azP -v -r $(BUILD) ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/
 
 fetch:
 	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; npm run pack && npm run build'
 	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* build/
 
 run: $(classes)
-	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/index.attic
+	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/build/index.attic
 
 clean:
-	rm -Rf $(BUILD)
-	mkdir -p $(BUILD)
+	rm -Rf $(BUILD)/*class
 
 $(BUILD)/%.class: %.java
 	$(JAVAC) -Xlint:unchecked -cp $(jars_list):. -d $(BUILD) -sourcepath src $<

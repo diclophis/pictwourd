@@ -180,7 +180,7 @@ public class ParallelSearcher implements Runnable {
                          Writer writer = new BufferedWriter(
                                            new OutputStreamWriter(
 																		         new FileOutputStream(
-                                               String.format("index.manifest/%d.json", tmp.getFileNameId())
+                                               String.format("build/index.manifest/%d.json", tmp.getFileNameId())
                                              )
                                            )
                                          );
@@ -196,7 +196,6 @@ public class ParallelSearcher implements Runnable {
     }
 
     public boolean search() {
-
       try {
         Thread p, c, m;
         p = new Thread(new Producer(this.allImageIds), "Producer");

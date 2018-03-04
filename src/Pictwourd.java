@@ -49,7 +49,7 @@ public class Pictwourd {
       System.exit(1);
     }
 
-		String indexPath = "index";
+		String indexPath = "build/index";
 		String imagesPath = args[0];
 		String shouldReindexImages = null;
 
@@ -113,13 +113,13 @@ public class Pictwourd {
       }
     }
 
-    File indexManifestDir = new File("index.manifest");
+    File indexManifestDir = new File("build/index.manifest");
     indexManifestDir.mkdir();
 
     Writer writer = new BufferedWriter(
                       new OutputStreamWriter(
                         new FileOutputStream(
-                          String.format("index.manifest/manifest.json")
+                          String.format("build/index.manifest/manifest.json")
                         )
                       )
                     );

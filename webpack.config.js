@@ -2,7 +2,6 @@ const path = require('path');
 
 module.exports = {
   module: {
-    
     rules: [
       {
         test: /\.js$/,
@@ -17,9 +16,9 @@ module.exports = {
     ],
   },
 
-  entry: './static.js',
+  entry: './browser.js',
   output: {
-    filename: 'bundle.js',
+    filename: 'static.js',
     path: path.resolve(__dirname, 'build')
   }
 };
