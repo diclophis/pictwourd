@@ -5,7 +5,7 @@ import ReactDOMServer from 'react-dom/server';
 
 import { App, Html } from './static';
 
-import { manifestIndexJson as cs } from 'index.manifest/manifest.json';
+import { manifestIndexJson as cs } from './build/index.manifest/manifest.json';
 
 const initialData = {}
 
@@ -21,13 +21,12 @@ async function fetchManifestIndex() {
   return indexH;
 }
 
-/*
-var fs = require('fs');
-const indexFile = fs.createWriteStream("build/index.html");
+//var fs = require('fs');
+//const indexFile = fs.createWriteStream("build/index.html");
 fetchManifestIndex().then(indexHtmlComponent => {
-  indexHtmlComponent.pipe(indexFile);
+  console.log("wtf");
+  //indexHtmlComponent.pipe(indexFile);
 });
-*/
 
 export default function() {
 };

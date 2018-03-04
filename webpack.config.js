@@ -20,6 +20,12 @@ module.exports = {
   },
 
   entry: './browser.js',
+  resolve: {
+    modules: [
+      'node_modules',
+      path.resolve('./build')
+    ]
+  },
   output: {
     filename: 'static.js',
     path: path.resolve(__dirname, 'build')
