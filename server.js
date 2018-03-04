@@ -1,6 +1,19 @@
-require("@babel/register")({
-  presets: ['@babel/preset-env', "@babel/es2015", "@babel/react"],
-  extensions: [".es6", ".es", ".jsx", ".js"]
-});
+//
+import Fs from 'fs';
 
-require("./static.js");
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+
+import { App, Html } from './static';
+
+const indexFile = Fs.createWriteStream("build/index.html");
+
+const initialData = {}
+
+export default function() {
+  ReactDOMServer.renderToNodeStream(
+    <Html initialData={JSON.stringify(initialData)}>
+      <App {...initialData} name="World" />
+    </Html>
+  ).pipe(indexFile);
+};

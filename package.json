@@ -28,7 +28,7 @@
   },
   "scripts": {
     "pack": "webpack",
-    "build": "nodejs server.js"
+    "build": "nodejs bootstrap.js"
   },
   "author": "Jon Bardin"
 }
