@@ -11,7 +11,19 @@ sources = $(wildcard src/*.java)
 dot_class = $(sources:.java=.class)
 classes = $(patsubst %,build/%, $(dot_class))
 
-all: $(classes)
+#NOTE: override these at execution time
+REPO ?= localhost/
+IMAGE_NAME ?= pictwourd
+IMAGE_TAG ?= $(strip $(shell find src build -type f | xargs shasum | sort | shasum | cut -f1 -d" "))
+IMAGE = $(REPO)$(IMAGE_NAME):$(IMAGE_TAG)
+
+$(shell mkdir -p $(BUILD))
+
+#MANIFEST_TMP=$(BUILD)/manifest.yml
+
+.PHONY: image uninstall clean test
+
+all: $(classes) $(BUILD)/$(IMAGE_TAG)
 
 run: all
 	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/TestInput001
@@ -22,3 +34,9 @@ clean:
 
 $(BUILD)/%.class: %.java
 	$(JAVAC) -Xlint:unchecked -cp $(jars_list):. -d $(BUILD) -sourcepath src $<
+
+image:
+	docker build -f Dockerfile -t $(IMAGE) .
+
+$(BUILD)/$(IMAGE_TAG): image
+	touch $(BUILD)/$(IMAGE_TAG)
