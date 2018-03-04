@@ -60,7 +60,7 @@ public class ParallelSearcher implements Runnable {
 
     private int overallCount = -1;
 
-    private int queueCapacity = 200;
+    private int queueCapacity = 1024;
     private LinkedBlockingQueue<WorkItem> queue = new LinkedBlockingQueue<>(queueCapacity);
 
     private int numOfThreads = 64;
