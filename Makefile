@@ -30,6 +30,9 @@ all:
 reset:
 	rm -Rf index index.config index.manifest
 
+sync:
+	rsync -azP -v -r index* ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/
+
 run: $(classes)
 	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/index.attic
 
