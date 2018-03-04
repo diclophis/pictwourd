@@ -5,25 +5,29 @@ import ReactDOMServer from 'react-dom/server';
 
 import { App, Html } from './static';
 
+import { manifestIndexJson as cs } from 'index.manifest/manifest.json';
+
 const initialData = {}
 
-  async function fetchManifestIndex() {
-  }
+async function fetchManifestIndex() {
+  const { manifestIndexJsonCs } = await Promise.resolve({ manifestIndexJson: cs });
 
-  fetchManifestIndex.then(
-
-  ReactDOMServer.renderToNodeStream(
+  const indexH = ReactDOMServer.renderToNodeStream(
     <Html initialData={JSON.stringify(initialData)}>
       <App {...initialData} />
     </Html>
-  )
+  );
 
+  return indexH;
+}
 
+/*
 var fs = require('fs');
-
 const indexFile = fs.createWriteStream("build/index.html");
-  .pipe(indexFile);
+fetchManifestIndex().then(indexHtmlComponent => {
+  indexHtmlComponent.pipe(indexFile);
+});
+*/
 
 export default function() {
-
 };
