@@ -11,10 +11,14 @@ sources = $(wildcard src/*.java)
 dot_class = $(sources:.java=.class)
 classes = $(patsubst %,build/%, $(dot_class))
 
-all: $(classes)
+all:
+	echo $(classes)
 
-run: all
-	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/TestInput001
+reset:
+	rm -Rf index index.config index.manifest
+
+run: $(classes)
+	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/index.attic
 
 clean:
 	rm -Rf $(BUILD)

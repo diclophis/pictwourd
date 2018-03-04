@@ -51,6 +51,11 @@ public class Pictwourd {
 
 		String indexPath = "index";
 		String imagesPath = args[0];
+		String shouldReindexImages = null;
+
+    if (args.length == 2) {
+		  shouldReindexImages = args[1];
+    }
 
     long time = System.currentTimeMillis();
     ParallelIndexer pin = new ParallelIndexer(numOfThreads, indexPath, args[0]);
@@ -72,16 +77,16 @@ public class Pictwourd {
 
     //pin.addExtractor(ACCID.class);
     //pin.addExtractor(COMO.class);
-
     //pin.setCustomDocumentBuilder(MetadataBuilder.class);
 
-    if (false) {
+    if (shouldReindexImages != null) {
+      System.out.println("---< indexing >-------------------------");
       Thread t = new Thread(pin);
       t.start();
       while (!pin.hasEnded()) {
         float percentage = (float) pin.getPercentageDone();
         System.out.println(String.format("%f\n", percentage));
-        Thread.currentThread().sleep(1000);
+        Thread.currentThread().sleep(3000);
       }
       try {
           t.join();
@@ -89,8 +94,6 @@ public class Pictwourd {
           e.printStackTrace();
       }
     }
-
-    System.out.println("Finished indexing.");
 
     System.out.println("---< searching >-------------------------");
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
@@ -101,7 +104,7 @@ public class Pictwourd {
       Thread t = new Thread(search);
       t.start();
       while (!search.hasEnded()) {
-        Thread.currentThread().sleep(1000);
+        Thread.currentThread().sleep(3000);
       }
       try {
           t.join();
@@ -109,6 +112,9 @@ public class Pictwourd {
           e.printStackTrace();
       }
     }
+
+    File indexManifestDir = new File("index.manifest");
+    indexManifestDir.mkdir();
 
     Writer writer = new BufferedWriter(
                       new OutputStreamWriter(
