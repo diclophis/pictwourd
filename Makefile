@@ -14,7 +14,7 @@ classes = $(patsubst %,build/%, $(dot_class))
 #NOTE: override these at execution time
 REPO ?= localhost/
 IMAGE_NAME ?= pictwourd
-IMAGE_TAG ?= $(strip $(shell find src build -type f | xargs shasum | sort | shasum | cut -f1 -d" "))
+IMAGE_TAG ?= $(strip $(shell find src -type f | xargs shasum | sort | shasum | cut -f1 -d" "))
 IMAGE = $(REPO)$(IMAGE_NAME):$(IMAGE_TAG)
 
 $(shell mkdir -p $(BUILD))
@@ -35,7 +35,7 @@ sync:
 
 fetch:
 	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; npm run pack && npm run build'
-	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* build/
+	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* $(BUILD)
 
 run: $(classes)
 	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/build/index.attic
