@@ -2,4 +2,5 @@ build
 index
 index.config
 index.manifest
+index.attic
 results*
