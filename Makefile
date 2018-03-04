@@ -33,6 +33,10 @@ reset:
 sync:
 	rsync -azP -v -r index* ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/
 
+fetch:
+	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; npm run pack && npm run build'
+	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* build/
+
 run: $(classes)
 	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/index.attic
 
