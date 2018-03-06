@@ -1,5 +1,6 @@
 import React from 'react';
-import manifestIndexJson from './build/index.manifest/manifest.json';
+
+//import manifestIndexJson from './build/index.manifest/manifest.json';
 
 class App extends React.Component {
   constructor(props) {
@@ -7,7 +8,7 @@ class App extends React.Component {
   
     this.onFooClick = () => this.onFoo();
 
-    this.state = { message: 'cheze' + manifestIndexJson[0]["filename"] };
+    this.state = { message: 'cheze' }; // + manifestIndexJson[0]["filename"] };
   }
 
   async componentDidMount() {
@@ -19,7 +20,11 @@ class App extends React.Component {
   }
 
   async onFoo() {
-    let randomInt = 0; //(parseInt(Math.random() * manifestIndexJson.length) + 1);
+    let manifestIndexJson = await import(
+      './build/index.manifest/manifest.json'
+    );
+
+    let randomInt = (parseInt(Math.random() * manifestIndexJson.length) + 1);
 
     let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
     //import otherJson from './build/index.manifest/999.json';

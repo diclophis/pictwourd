@@ -4,10 +4,11 @@ const glob = require("glob");
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-//const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 
-//const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
-//const WebpackManifestPlugin = require('webpack-manifest-plugin');
+const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
+
+const WebpackManifestPlugin = require('webpack-manifest-plugin');
 
 
 //const mergeJsonWebpackPlugin = require("merge-jsons-webpack-plugin");
@@ -47,15 +48,14 @@ SuppressEntryChunksPlugin.prototype.apply = function(compiler) {
 
 const theEntries = {}
 
-
 //theEntries['cheeze'] = []
 //foo.map(jsonName => {
 //  theEntries['cheeze'].push(jsonName);
 //});
 
-const foo = glob.sync("./build/index.manifest/*json");
-
+//const foo = glob.sync("./build/index.manifest/*json");
 //theEntries['data'] = foo;
+
 theEntries['ui'] = ['./browser.js'];
 
 //    'data': './build/index.manifest/manifest.json',
@@ -65,10 +65,10 @@ module.exports = {
   module: {
     rules: [
       //{
-      //  //test: /\.\/build\/index\.manifest\/\.json$/,
-      //  include: [
-      //    path.resolve(__dirname, 'build/index.manifest')
-      //  ]
+      //  test: /\.\/build\/index\.manifest\/\.json$/,
+      ////  include: [
+      ////    path.resolve(__dirname, 'build/index.manifest')
+      ////  ]
       //},
       {
         test: /\.js$/,
@@ -83,31 +83,30 @@ module.exports = {
   entry: theEntries,
 
   plugins: [
-    new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify("production")
-    }),
+    //new webpack.DefinePlugin({
+    //  "process.env.NODE_ENV": JSON.stringify("production")
+    //}),
 
     //new webpack.optimize.AggressiveSplittingPlugin({
-    //   //minSize: 20000,
-    //   //maxSize: 20000
+    //   minSize: 50000,
+    //   maxSize: 150000
     //}),
 
-    //new WebpackManifestPlugin(),
+    new WebpackManifestPlugin(),
 
     //new InlineChunkManifestHtmlWebpackPlugin({
-    //  manifestVariable: "manifest",
-    //  extractManifest: false
+    //  //manifestVariable: "manifest",
+    //  //extractManifest: false
     //}),
 
-    //new ScriptExtHtmlWebpackPlugin(),
+    new ScriptExtHtmlWebpackPlugin(),
 
     new HtmlWebpackPlugin({
-      template: './build/index.template.html'
+      template: './build/index.template.html',
+      //chunks: ['ui', 'ui-common', 'data', 'data-common']
     }),
 
     //new InlineChunkManifestHtmlWebpackPlugin(),
-
-
 /*
     new mergeJsonWebpackPlugin({
         "encoding": "ascii",
@@ -147,11 +146,21 @@ module.exports = {
 
     */
 
+/*
+    new webpack.optimize.CommonsChunkPlugin({
+        name: "ui",
+        chunks: ["ui"],
+        minChunks: 1,
+        minSize: 1
+    }),
 
-    //new webpack.optimize.CommonsChunkPlugin({
-    //    name: "ui",
-    //    chunks: ["ui"]
-    //}),
+    new webpack.optimize.CommonsChunkPlugin({
+        name: "data",
+        chunks: ["data"],
+        minChunks: 1,
+        minSize: 1
+    }),
+*/
 
     //new webpack.optimize.CommonsChunkPlugin({
     //  name: "data",
@@ -169,7 +178,7 @@ module.exports = {
 
   cache: false,
 
-  mode: 'production',
+  //mode: 'production',
 
   resolve: {
     modules: [
@@ -181,8 +190,7 @@ module.exports = {
   },
 
   output: {
-    filename: '[name].static.js',
-    chunkFilename: '[name].static.js',
+    filename: '[hash]-[name].compiled.js',
     path: path.resolve(__dirname, 'build')
   },
 
