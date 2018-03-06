@@ -1,9 +1,13 @@
 const path = require('path');
 const webpack = require('webpack');
 const glob = require("glob");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+
+//const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
+
 
 //const mergeJsonWebpackPlugin = require("merge-jsons-webpack-plugin");
-
 
 /*
 function SuppressEntryChunksPlugin(options) {
@@ -47,7 +51,7 @@ const foo = glob.sync("./build/index.manifest/*json");
 //  theEntries['cheeze'].push(jsonName);
 //});
 
-//theEntries['data'] = foo;
+//theEntries['data'] = ['./empty.js'];
 
 theEntries['ui'] = ['./browser.js'];
 
@@ -57,12 +61,12 @@ theEntries['ui'] = ['./browser.js'];
 module.exports = {
   module: {
     rules: [
-       {
-         //test: /\.\/build\/index\.manifest\/\.json$/,
-         include: [
-           path.resolve(__dirname, 'build/index.manifest')
-         ]
-       },
+      //{
+      //  //test: /\.\/build\/index\.manifest\/\.json$/,
+      //  include: [
+      //    path.resolve(__dirname, 'build/index.manifest')
+      //  ]
+      //},
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
@@ -76,6 +80,13 @@ module.exports = {
   entry: theEntries,
 
   plugins: [
+    new HtmlWebpackPlugin({
+      template: './build/index.template.html'
+    }),
+
+    //new InlineChunkManifestHtmlWebpackPlugin(),
+    new ScriptExtHtmlWebpackPlugin(),
+
     //new webpack.DefinePlugin({
     //  "process.env.NODE_ENV": JSON.stringify("production")
     //}),
@@ -119,10 +130,10 @@ module.exports = {
 
     */
 
-    //new webpack.optimize.AggressiveSplittingPlugin({
-    //  minSize: 20000,
-    //  maxSize: 30000
-    //}),
+    // new webpack.optimize.AggressiveSplittingPlugin({
+    //   minSize: 20000,
+    //   maxSize: 30000
+    // }),
 
     /*
     new webpack.optimize.CommonsChunkPlugin({
@@ -146,13 +157,14 @@ module.exports = {
 
   cache: false,
 
-  mode: 'development',
+  //mode: 'development',
 
   resolve: {
     modules: [
-      'node_modules',
-      path.resolve('./build'),
-      path.resolve('./build/index.manifest'),
+      'node_modules'
+      //,
+      //path.resolve('./build'),
+      //path.resolve('./build/index.manifest'),
     ]
   },
 
@@ -167,15 +179,15 @@ module.exports = {
 		splitChunks: {
 			cacheGroups: {
 				uiStuff: {
-					name: "ui",
+					name: "uiCache",
 					test: "ui",
           chunks: "initial",
 					enforce: true
 				},
 				dataStuff: {
-					name: "data",
-					test: "data",
-          //test: /.*json$/,
+					name: "dataCache",
+					//test: "data",
+          test: /.*json$/,
           chunks: "async",
 					enforce: true
 				}

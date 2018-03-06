@@ -9,5 +9,5 @@ require("@babel/register")({
 server = require("./server.js");
 
 indexHtmlComponent = server.default();
-const indexFile = fs.createWriteStream("build/index.html");
+const indexFile = fs.createWriteStream("build/index.template.html");
 indexHtmlComponent.pipe(indexFile);

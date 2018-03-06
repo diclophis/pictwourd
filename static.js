@@ -1,9 +1,13 @@
 import React from 'react';
+import manifestIndexJson from './build/index.manifest/manifest.json';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { message: 'server' };
+  
+    this.onFooClick = () => this.onFoo();
+
+    this.state = { message: 'cheze' + manifestIndexJson[0]["filename"] };
   }
 
   async componentDidMount() {
@@ -11,7 +15,7 @@ class App extends React.Component {
       './build/index.manifest/manifest.json'
     );
     console.log("fart");
-    this.setState({ message: 'cheze' + manifestIndexJson[0]["filename"] });
+    this.setState({ message: 'bizzzzz' + manifestIndexJson[0]["filename"] });
   }
 
   async onFoo() {
@@ -21,12 +25,7 @@ class App extends React.Component {
     //import otherJson from './build/index.manifest/999.json';
     //let otherJson = await import(/* webpackChunkName: 'cheeze' */ `./build/index.manifest/${randomInt}.json`);
 
-    let otherJson = await import(
-      /* 
-        webpackChunkName: 'data'
-        webpackMode: 'lazy-once'
-      */
-      `./build/index.manifest/${randomInt}.json`);
+    let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
 
     console.log(randomInt, jsonFileToLoad);
 
@@ -46,13 +45,13 @@ class App extends React.Component {
     //await import otherJson from jsonFileToLoad;
 
     console.log("cheeese", otherJson['results'][0]['indexNumber'], randomInt, otherJson);
-    //this.setState({ message: 'cheze' + manifestIndexJson[0]["filename"] });
+    this.setState({ message: 'fooooo' + manifestIndexJson[0]["filename"]  + otherJson['results'][0]['indexNumber']});
   }
 
   render() {
     let { message } = this.state;
     return (
-      <div className="App" onClick={this.onFoo}>
+      <div className="App" onClick={this.onFooClick}>
         <p className="App-intro">
           { message }
         </p>
@@ -70,8 +69,6 @@ const Html = (props) => {
       </head>
       <body>
         <div id="app">{props.children}</div>
-        <script src="ui.static.js"></script>
-        <script src="data.static.js"></script>
       </body>
     </html>
   );
