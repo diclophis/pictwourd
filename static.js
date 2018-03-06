@@ -6,7 +6,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
   
-    this.onFooClick = () => this.onFoo();
+    //this.onFooClick = () => this.onFoo();
 
     this.state = {};
   }
@@ -15,10 +15,12 @@ class App extends React.Component {
     await this.onFoo();
   }
 
-  async onFoo(newImage = null) {
+  async onFoo(newImage) {
     let manifestIndexJson = await import(
       './build/index.manifest/manifest.json'
     );
+
+    console.log(newImage);
 
     let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
     let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
@@ -53,14 +55,17 @@ class App extends React.Component {
             newHeight = 5;
           }
 
+          let newIndex = null;
+
           if (index == 0) {
-            style = {order: 0, margin: "0.5em", flex: `0 1 ${vvv - index}em`, alignSelf: "auto"}
+            style = {transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${vvv - index}em`, alignSelf: "auto"}
           } else {
-            style = {order: 0, margin: "0.5em", flex: `0 1 ${newHeight}em`, alignSelf: "center"};
+            newIndex = otherImage.indexNumber;
+            style = {transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${newHeight}em`, alignSelf: "center"};
           }
 
           return (
-            <img key={otherUrl} style={style} src={otherUrl} onClick={this.onFooClick(otherImage.indexNumber)}/>
+            <img key={otherUrl} style={style} src={otherUrl} onClick={this.onFoo.bind(this, newIndex)}/>
           )
         });
       }
@@ -76,7 +81,7 @@ class App extends React.Component {
     };
 
     return (
-      <div onClick={this.onFooClick}>
+      <div>
         <div style={flexContainer}>
           {otherImages}
         </div>
