@@ -34,7 +34,8 @@ sync:
 	rsync -azP -v -r $(BUILD) ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/
 
 fetch:
-	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; npm run pack && npm run build'
+	rm -Rf $(BUILD)/*js $(BUILD)/*html
+	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; rm -Rf rm -Rf $(BUILD)/*js $(BUILD)/*html; npm run pack && npm run build'
 	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* $(BUILD)
 
 run: $(classes)
