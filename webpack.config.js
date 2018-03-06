@@ -1,7 +1,11 @@
 const path = require('path');
 const webpack = require('webpack');
+const glob = require("glob");
+
+//const mergeJsonWebpackPlugin = require("merge-jsons-webpack-plugin");
 
 
+/*
 function SuppressEntryChunksPlugin(options) {
   if (typeof options === 'string') {
     this.options = {skip: [options]};
@@ -32,18 +36,34 @@ SuppressEntryChunksPlugin.prototype.apply = function(compiler) {
     callback();
   });
 };
+*/
+
+const theEntries = {}
+const foo = glob.sync("./build/index.manifest/*json");
+theEntries['cheeze'] = []
+
+foo.map(jsonName => {
+//console.log(jsonName);
+  theEntries['cheeze'].push(jsonName);
+});
+
+theEntries['ui'] = ['./browser.js'];
+
+//    'data': './build/index.manifest/manifest.json',
+//  },
 
 module.exports = {
   module: {
     rules: [
-    /*
-      {
-        test: /\.json$/,
-        use: {
-          loader: 'json-loader'
-        }
-      },
-    */
+       {
+         //test: /\.\/build\/index\.manifest\/\.json$/,
+         include: [
+           path.resolve(__dirname, 'build/index.manifest')
+         ],
+         use: {
+           loader: 'json-loader'
+         }
+       },
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
@@ -54,15 +74,35 @@ module.exports = {
     ],
   },
 
-  entry: {
-    'ui': './browser.js',
-    'data': './build/index.manifest/manifest.json',
-  },
+  entry: theEntries,
 
   plugins: [
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify("production")
     }),
+
+/*
+		new mergeJsonWebpackPlugin({
+				"encoding": "ascii",
+				"debug": true,
+				"output": {
+					"groupBy": [
+						{
+							"pattern": "./build/index.manifest/{1,2,3,4,5,6,7,8,9,10}.json", 
+							"fileName": "0-10.json" 
+						},
+						{
+							"pattern": "./build/index.manifest/{11,12,13,14,15,16,17,18,19}.json", 
+							"fileName": "10-20.json" 
+						},
+						{
+							"pattern": "./build/index.manifest/manifest.json", 
+							"fileName":"manifest.json"
+						}
+					]
+				}
+		}),
+*/
 
     //new SuppressEntryChunksPlugin(['data']),
 
@@ -97,18 +137,22 @@ module.exports = {
     })
     */
 
+    /*
     new webpack.optimize.CommonsChunkPlugin({
         name: "data",
         chunks: ["main"]
     }),
+    */
+
   ],
 
-  cache: true,
+  cache: false,
 
   resolve: {
     modules: [
       'node_modules',
-      path.resolve('./build')
+      path.resolve('./build'),
+      path.resolve('./build/index.manifest'),
     ]
   },
 
@@ -118,5 +162,5 @@ module.exports = {
     path: path.resolve(__dirname, 'build')
   },
 
-  recordsPath: path.join(__dirname, "records.json")
+  //recordsPath: path.join(__dirname, "records.json")
 };
