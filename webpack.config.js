@@ -176,7 +176,7 @@ module.exports = {
 
   ],
 
-  cache: false,
+  cache: true,
 
   //mode: 'production',
 
