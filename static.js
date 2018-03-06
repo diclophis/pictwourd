@@ -19,7 +19,7 @@ class App extends React.Component {
   }
 
   async onFoo() {
-    let randomInt = (parseInt(Math.random() * 100) + 1);
+    let randomInt = 0; //(parseInt(Math.random() * manifestIndexJson.length) + 1);
 
     let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
     //import otherJson from './build/index.manifest/999.json';

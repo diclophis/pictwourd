@@ -1,12 +1,13 @@
 const path = require('path');
 const webpack = require('webpack');
 const glob = require("glob");
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+
+//const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 
 //const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
 //const WebpackManifestPlugin = require('webpack-manifest-plugin');
-
 
 
 //const mergeJsonWebpackPlugin = require("merge-jsons-webpack-plugin");
@@ -53,8 +54,8 @@ const theEntries = {}
 //});
 
 const foo = glob.sync("./build/index.manifest/*json");
-theEntries['data'] = foo; //['./empty.js'];
 
+//theEntries['data'] = foo;
 theEntries['ui'] = ['./browser.js'];
 
 //    'data': './build/index.manifest/manifest.json',
@@ -82,6 +83,15 @@ module.exports = {
   entry: theEntries,
 
   plugins: [
+    new webpack.DefinePlugin({
+      "process.env.NODE_ENV": JSON.stringify("production")
+    }),
+
+    //new webpack.optimize.AggressiveSplittingPlugin({
+    //   //minSize: 20000,
+    //   //maxSize: 20000
+    //}),
+
     //new WebpackManifestPlugin(),
 
     //new InlineChunkManifestHtmlWebpackPlugin({
@@ -89,7 +99,7 @@ module.exports = {
     //  extractManifest: false
     //}),
 
-    new ScriptExtHtmlWebpackPlugin(),
+    //new ScriptExtHtmlWebpackPlugin(),
 
     new HtmlWebpackPlugin({
       template: './build/index.template.html'
@@ -97,31 +107,28 @@ module.exports = {
 
     //new InlineChunkManifestHtmlWebpackPlugin(),
 
-    //new webpack.DefinePlugin({
-    //  "process.env.NODE_ENV": JSON.stringify("production")
-    //}),
 
 /*
-		new mergeJsonWebpackPlugin({
-				"encoding": "ascii",
-				"debug": true,
-				"output": {
-					"groupBy": [
-						{
-							"pattern": "./build/index.manifest/{1,2,3,4,5,6,7,8,9,10}.json", 
-							"fileName": "0-10.json" 
-						},
-						{
-							"pattern": "./build/index.manifest/{11,12,13,14,15,16,17,18,19}.json", 
-							"fileName": "10-20.json" 
-						},
-						{
-							"pattern": "./build/index.manifest/manifest.json", 
-							"fileName":"manifest.json"
-						}
-					]
-				}
-		}),
+    new mergeJsonWebpackPlugin({
+        "encoding": "ascii",
+        "debug": true,
+        "output": {
+          "groupBy": [
+            {
+              "pattern": "./build/index.manifest/{1,2,3,4,5,6,7,8,9,10}.json", 
+              "fileName": "0-10.json" 
+            },
+            {
+              "pattern": "./build/index.manifest/{11,12,13,14,15,16,17,18,19}.json", 
+              "fileName": "10-20.json" 
+            },
+            {
+              "pattern": "./build/index.manifest/manifest.json", 
+              "fileName":"manifest.json"
+            }
+          ]
+        }
+    }),
 */
 
     //new SuppressEntryChunksPlugin(['data']),
@@ -140,20 +147,16 @@ module.exports = {
 
     */
 
-    //new webpack.optimize.AggressiveSplittingPlugin({
-    //   minSize: 20000,
-    //   maxSize: 30000
-    //}),
 
     //new webpack.optimize.CommonsChunkPlugin({
     //    name: "ui",
     //    chunks: ["ui"]
     //}),
 
-    new webpack.optimize.CommonsChunkPlugin({
-      name: "data",
-      chunks: ["data"]
-    }),
+    //new webpack.optimize.CommonsChunkPlugin({
+    //  name: "data",
+    //  chunks: ["data"]
+    //}),
 
     /*
     new webpack.optimize.CommonsChunkPlugin({
@@ -166,7 +169,7 @@ module.exports = {
 
   cache: false,
 
-  //mode: 'development',
+  mode: 'production',
 
   resolve: {
     modules: [
@@ -183,27 +186,33 @@ module.exports = {
     path: path.resolve(__dirname, 'build')
   },
 
-/*
-	optimization: {
-		splitChunks: {
-			cacheGroups: {
-				uiStuff: {
-					name: "uiCache",
-					test: "ui",
-          chunks: "initial",
-					enforce: true
-				},
-				dataStuff: {
-					name: "dataCache",
-					//test: "data",
-          test: /.*json$/,
-          chunks: "async",
-					enforce: true
-				}
-			}
-		}
-	}
-*/
+  //optimization: {
+  //  splitChunks: {
+  //    chunks: 'all'
+  //  }
+  //},
+
+  /*
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        ui: {
+          name: "ui",
+          test: "ui",
+          //chunks: "all",
+          enforce: true
+        },
+        data: {
+          name: "data",
+          test: "data",
+          //test: /.*json$/,
+          //chunks: "all",
+          enforce: true
+        }
+      }
+    }
+  }
+  */
 
   //recordsPath: path.join(__dirname, "records.json")
 };

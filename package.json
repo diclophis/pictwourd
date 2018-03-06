@@ -30,7 +30,7 @@
     "react-dom": "^16.0",
     "react-listento": "*",
     "script-ext-html-webpack-plugin": "^1.8.8",
-    "webpack": "^3.0",
+    "webpack": "^4",
     "webpack-cli": "^2.0",
     "webpack-manifest-plugin": "^2.0.0-rc.2"
   },
