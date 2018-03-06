@@ -5,6 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 
 //const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
+//const WebpackManifestPlugin = require('webpack-manifest-plugin');
+
 
 
 //const mergeJsonWebpackPlugin = require("merge-jsons-webpack-plugin");
@@ -44,14 +46,14 @@ SuppressEntryChunksPlugin.prototype.apply = function(compiler) {
 
 const theEntries = {}
 
-const foo = glob.sync("./build/index.manifest/*json");
 
 //theEntries['cheeze'] = []
 //foo.map(jsonName => {
 //  theEntries['cheeze'].push(jsonName);
 //});
 
-//theEntries['data'] = ['./empty.js'];
+const foo = glob.sync("./build/index.manifest/*json");
+theEntries['data'] = foo; //['./empty.js'];
 
 theEntries['ui'] = ['./browser.js'];
 
@@ -80,12 +82,20 @@ module.exports = {
   entry: theEntries,
 
   plugins: [
+    //new WebpackManifestPlugin(),
+
+    //new InlineChunkManifestHtmlWebpackPlugin({
+    //  manifestVariable: "manifest",
+    //  extractManifest: false
+    //}),
+
+    new ScriptExtHtmlWebpackPlugin(),
+
     new HtmlWebpackPlugin({
       template: './build/index.template.html'
     }),
 
     //new InlineChunkManifestHtmlWebpackPlugin(),
-    new ScriptExtHtmlWebpackPlugin(),
 
     //new webpack.DefinePlugin({
     //  "process.env.NODE_ENV": JSON.stringify("production")
@@ -130,21 +140,20 @@ module.exports = {
 
     */
 
-    // new webpack.optimize.AggressiveSplittingPlugin({
+    //new webpack.optimize.AggressiveSplittingPlugin({
     //   minSize: 20000,
     //   maxSize: 30000
-    // }),
+    //}),
 
-    /*
-    new webpack.optimize.CommonsChunkPlugin({
-        name: "ui",
-        chunks: ["ui"]
-    }),
+    //new webpack.optimize.CommonsChunkPlugin({
+    //    name: "ui",
+    //    chunks: ["ui"]
+    //}),
+
     new webpack.optimize.CommonsChunkPlugin({
       name: "data",
-      chunks: ["cheeze"]
-    })
-    */
+      chunks: ["data"]
+    }),
 
     /*
     new webpack.optimize.CommonsChunkPlugin({
