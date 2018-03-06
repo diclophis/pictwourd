@@ -1,0 +1,14 @@
+{
+  plugins: ['syntax-dynamic-import', "dynamic-import-node"],
+  presets: [
+    [
+      '@babel/preset-env', {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "@babel/es2015",
+    "@babel/react"
+  ]
+}
