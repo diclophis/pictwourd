@@ -15,13 +15,18 @@ class App extends React.Component {
   }
 
   async onFoo() {
-    let randomInt = 999; //(parseInt(Math.random() * 100) + 1);
+    let randomInt = (parseInt(Math.random() * 100) + 1);
+
     let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
-
     //import otherJson from './build/index.manifest/999.json';
-
     //let otherJson = await import(/* webpackChunkName: 'cheeze' */ `./build/index.manifest/${randomInt}.json`);
-    let otherJson = await import(/* webpackChunkName: 'cheez' */ './build/index.manifest/999.json');
+
+    let otherJson = await import(
+      /* 
+        webpackChunkName: 'data'
+        webpackMode: 'lazy-once'
+      */
+      `./build/index.manifest/${randomInt}.json`);
 
     console.log(randomInt, jsonFileToLoad);
 
@@ -66,6 +71,7 @@ const Html = (props) => {
       <body>
         <div id="app">{props.children}</div>
         <script src="ui.static.js"></script>
+        <script src="data.static.js"></script>
       </body>
     </html>
   );

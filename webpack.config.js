@@ -39,13 +39,15 @@ SuppressEntryChunksPlugin.prototype.apply = function(compiler) {
 */
 
 const theEntries = {}
-const foo = glob.sync("./build/index.manifest/*json");
-theEntries['cheeze'] = []
 
-foo.map(jsonName => {
-//console.log(jsonName);
-  theEntries['cheeze'].push(jsonName);
-});
+const foo = glob.sync("./build/index.manifest/*json");
+
+//theEntries['cheeze'] = []
+//foo.map(jsonName => {
+//  theEntries['cheeze'].push(jsonName);
+//});
+
+//theEntries['data'] = foo;
 
 theEntries['ui'] = ['./browser.js'];
 
@@ -59,10 +61,7 @@ module.exports = {
          //test: /\.\/build\/index\.manifest\/\.json$/,
          include: [
            path.resolve(__dirname, 'build/index.manifest')
-         ],
-         use: {
-           loader: 'json-loader'
-         }
+         ]
        },
       {
         test: /\.js$/,
@@ -77,9 +76,9 @@ module.exports = {
   entry: theEntries,
 
   plugins: [
-    new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify("production")
-    }),
+    //new webpack.DefinePlugin({
+    //  "process.env.NODE_ENV": JSON.stringify("production")
+    //}),
 
 /*
 		new mergeJsonWebpackPlugin({
@@ -118,22 +117,21 @@ module.exports = {
       minChunks: Infinity
     }),
 
-    new webpack.optimize.AggressiveSplittingPlugin({
-      minSize: 300000,
-      maxSize: 400000
-    }),
-
     */
 
-    /*
+    //new webpack.optimize.AggressiveSplittingPlugin({
+    //  minSize: 20000,
+    //  maxSize: 30000
+    //}),
 
+    /*
     new webpack.optimize.CommonsChunkPlugin({
-        name: "main",
-        chunks: ["main"]
+        name: "ui",
+        chunks: ["ui"]
     }),
     new webpack.optimize.CommonsChunkPlugin({
-      name: "manifest",
-      chunks: ["manifest"]
+      name: "data",
+      chunks: ["cheeze"]
     })
     */
 
@@ -148,6 +146,8 @@ module.exports = {
 
   cache: false,
 
+  mode: 'development',
+
   resolve: {
     modules: [
       'node_modules',
@@ -161,6 +161,28 @@ module.exports = {
     chunkFilename: '[name].static.js',
     path: path.resolve(__dirname, 'build')
   },
+
+/*
+	optimization: {
+		splitChunks: {
+			cacheGroups: {
+				uiStuff: {
+					name: "ui",
+					test: "ui",
+          chunks: "initial",
+					enforce: true
+				},
+				dataStuff: {
+					name: "data",
+					test: "data",
+          //test: /.*json$/,
+          chunks: "async",
+					enforce: true
+				}
+			}
+		}
+	}
+*/
 
   //recordsPath: path.join(__dirname, "records.json")
 };
