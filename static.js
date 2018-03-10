@@ -38,7 +38,7 @@ class App extends React.Component {
     let otherImages = null;
 
     if (this.state.manifestIndexJson && this.state.manifestIndexJson[this.state.activeImage]) {
-      newUrl = this.state.manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd", "");
+      newUrl = this.state.manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build", "");
 
       let manifestIndexJson = this.state.manifestIndexJson;
       let relatedImages = this.state.relatedImages;
@@ -46,7 +46,7 @@ class App extends React.Component {
       if (relatedImages) {
         let vvv = 33;
         otherImages = relatedImages.map((otherImage, index) => {
-          let otherUrl = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd", "");
+          let otherUrl = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd/build", "");
 
           let style = {};
 
@@ -58,10 +58,10 @@ class App extends React.Component {
           let newIndex = null;
 
           if (index == 0) {
-            style = {transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${vvv - index}em`, alignSelf: "auto"}
+            style = {cursor: 'pointer', transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${vvv - index}em`, alignSelf: "auto"}
           } else {
             newIndex = otherImage.indexNumber;
-            style = {transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${newHeight}em`, alignSelf: "center"};
+            style = {cursor: 'pointer', transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${newHeight}em`, alignSelf: "center"};
           }
 
           return (
