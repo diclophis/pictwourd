@@ -33,18 +33,26 @@ var styles = cssInJS((context) => {
         transition: "none 0s",
         order: 0,
         margin: "0.5em", 
+        width: `${vvv}em`,
         flex: `0 1 ${vvv}em`, alignSelf: "auto",
     }
 
     if (i !=0) {
       primary['flex'] = `0 1 ${newHeight}em`;
+      primary['width'] = `${newHeight}em`;
       primary['alignSelf'] = "center";
     } else {
-      //primary['border'] = "0.333em solid white";
-      primary['margin-left'] = "14em";
+      primary['margin-left'] = "13em";
     }
 
     foop['image' + i] = primary;
+  }
+
+  foop['@media only screen and (orientation: portrait)'] = {
+    'image0': {
+      width: `${vvv * 1.333}em`,
+      flex: `0 1 ${vvv * 1.333}em`, alignSelf: "auto",
+    }
   }
 
   return foop;
@@ -143,8 +151,10 @@ class App extends React.Component {
         <ImagePalette image={firstImage['otherUrl']} key={firstImage['otherUrl']}>
           {({ backgroundColor, color, alternativeColor }) => (
             <div style={{backgroundColor, color}}>
-              <p style={{margin: "1em", width: "12em", float: "left", position: "absolute"}}>
-                {firstImage['newIndex']}
+              <p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
+                <h1 style={{margin: 0}}>
+                  <a style={{ color }} href="?">?</a>{firstImage['newIndex']}
+                </h1>
               </p>
               <div className={styles.flexContainer}>
                 {fooop(color, alternativeColor)}
