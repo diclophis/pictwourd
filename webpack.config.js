@@ -8,7 +8,6 @@ const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
 const WebpackManifestPlugin = require('webpack-manifest-plugin');
 
-
 const theEntries = {}
 
 theEntries['ui'] = ['./browser.js'];

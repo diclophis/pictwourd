@@ -1,7 +1,7 @@
 import React from 'react';
 import ImagePalette from 'react-image-palette';
 
-//import manifestIndexJson from './build/index.manifest/manifest.json';
+import manifestIndexJson from './build/index.manifest/manifest.json';
 
 var styles = cssInJS((context) => {
   let vvv = 28;
@@ -33,36 +33,70 @@ var styles = cssInJS((context) => {
         transition: "none 0s",
         order: 0,
         margin: "0.5em", 
-        width: `${vvv}em`,
-        flex: `0 1 ${vvv}em`, alignSelf: "auto",
+        //width: `70%`,
+        //flex: `0 1 auto`,
+        alignSelf: "auto",
+        //maxHeight: "70%"
     }
 
     if (i !=0) {
-      primary['flex'] = `0 1 ${newHeight}em`;
-      primary['width'] = `${newHeight}em`;
+      //primary['flex'] = `1 1 16em`;
+      //primary['width'] = `${newHeight}em`;
+      primary['max-width'] = "31%"; ////"21.23%";
+      primary['max-height'] = "27%";
       primary['alignSelf'] = "center";
     } else {
+      primary['flex'] = `0 1 auto`;
+      primary['max-height'] = "35.5em";
       primary['margin-left'] = "13em";
+      primary['margin-bottom'] = "2em";
     }
 
     foop['image' + i] = primary;
   }
 
-  foop['@media only screen and (orientation: portrait)'] = {
-    'image0': {
-      width: `${vvv * 1.333}em`,
-      flex: `0 1 ${vvv * 1.333}em`, alignSelf: "auto",
+  let bizz = {
+  }
+
+
+  for (let i = 0; i<32; i++) {
+    if (i != 0) {
+    bizz['image' + i] = {
+      //maxHeight: '7em'
+      maxWidth: '29%'
+      //width: `40%`,
+      //flex: `0 1 ${vvv * 1.333}em`,
+      //flex: `0 0`,
+    };
     }
   }
+
+  foop['@media only screen and (orientation: portrait)'] = bizz;
 
   return foop;
 });
 
+class Foox extends ImagePalette {
+  render() {
+    const { colors } = this.state;
+    const { children, render, defaultColors } = this.props;
+    const callback = render || children;
+    if (!callback) {
+      throw new Error(
+        "ImagePaletteProvider expects a render callback either as a child or via the `render` prop"
+      );
+    }
+    return callback(colors || defaultColors);
+  }
+};
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.lastDefaultColors = {
+      backgroundColor: 'white', color: 'blue', alternativeColor: 'magenta'
+    };
   }
 
   async componentDidMount() {
@@ -76,18 +110,23 @@ class App extends React.Component {
   async onFoo(newImage) {
     console.log("onFooStart");
 
-    let manifestIndexJson = await import('./build/index.manifest/manifest.json');
+    //let manifestIndexJson = await import('./build/index.manifest/manifest.json');
+
     let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
-    let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
+    let jsonFileToLoad = './' + randomInt.toString() + '.json'
+    console.log("onFooStart2");
     let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
 
 		var stateObj = {
-			manifestIndexJson: manifestIndexJson,
+			//manifestIndexJson: manifestIndexJson,
 			relatedImages: otherJson['results'],
 			activeImage: randomInt
 		};
 
-		history.pushState(stateObj, "image" + randomInt, "?" + randomInt + "");
+		history.pushState(stateObj, "image" + randomInt, "?" + randomInt + "#prime");
+    if (this.prime) {
+      this.prime.scrollIntoView();
+    }
 
     console.log("onFooDone");
 
@@ -100,10 +139,10 @@ class App extends React.Component {
     let firstImage = null;
     let fooop = null;
 
-    if (this.state.manifestIndexJson && this.state.manifestIndexJson[this.state.activeImage]) {
-      newUrl = this.state.manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build", "");
+    if (manifestIndexJson && manifestIndexJson[this.state.activeImage]) {
+      newUrl = manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build", "");
 
-      let manifestIndexJson = this.state.manifestIndexJson;
+      //let manifestIndexJson = this.state.manifestIndexJson;
       let relatedImages = this.state.relatedImages;
 
       let filterFunA = (otherImage, index) => {
@@ -154,24 +193,27 @@ class App extends React.Component {
 
     if (firstImage) {
       return (
-        <ImagePalette image={firstImage['otherUrl']} key={firstImage['otherUrl']}>
-          {({ backgroundColor, color, alternativeColor }) => (
-            <div style={{backgroundColor, color, transition: "background-color 1s" }}>
-              <p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
-                <h1 style={{margin: 0}}>
-                  <a style={{ color }} href="?">?</a>{firstImage['newIndex']}
-                </h1>
-              </p>
-              <div className={styles.flexContainer}>
-                {fooop(color, alternativeColor)}
-              </div>
-            </div>
-          )}
-        </ImagePalette>
+        <Foox image={firstImage['otherUrl']} key={firstImage['otherUrl']} defaultColors={this.lastDefaultColors}>
+          {({ backgroundColor, color, alternativeColor }) => {
+            this.lastDefaultColors = { backgroundColor: backgroundColor, color: color, alternativeColor: alternativeColor};
+						return (
+							<div ref={node => this.prime = node} id="prime" style={{backgroundColor, color, transition: "background-color 1s" }}>
+								<p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
+									<h1 style={{margin: 0}}>
+										<a style={{ color }} href="?">?</a>{firstImage['newIndex']}
+									</h1>
+								</p>
+								<div className={styles.flexContainer}>
+									{fooop(color, alternativeColor)}
+								</div>
+							</div>
+            );
+          }}
+        </Foox>
       );
     } else {
       return (
-        <div className={styles.flexContainer}>
+        <div ref={node => this.prime = node} id="prime" className={styles.flexContainer}>
         </div>
       );
     }
