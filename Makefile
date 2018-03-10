@@ -38,7 +38,7 @@ sync:
 fetch:
 	rm -Rf $(BUILD)/*js $(BUILD)/*html
 	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; rm -Rf rm -Rf $(BUILD)/*js $(BUILD)/*html; npm run build && npm run pack'
-	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/{*.html,*js} $(BUILD)
+	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/{*.html,*js,*css} $(BUILD)
 	firefox http://localhost:8000
 
 build: $(classes)
