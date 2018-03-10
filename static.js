@@ -1,41 +1,91 @@
 import React from 'react';
+import ImagePalette from 'react-image-palette';
 
 //import manifestIndexJson from './build/index.manifest/manifest.json';
+
+var styles = cssInJS((context) => {
+  let vvv = 28;
+
+  let foop = {
+		'$html, body': {
+			margin: 0,
+			padding: 0,
+		},
+
+    flexContainer: {
+      display: "flex",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "flex-start",
+      alignContent: "flex-start",
+      alignItems: "flex-start"
+    }
+  };
+
+  for (let i = 0; i<32; i++) {
+    let newHeight = vvv - 17 - (i * 1.75);
+    if (newHeight < 5) {
+      newHeight = 5;
+    }
+
+    let primary = {
+        cursor: 'pointer',
+        transition: "none 0s",
+        order: 0,
+        margin: "0.5em", 
+        flex: `0 1 ${vvv}em`, alignSelf: "auto",
+    }
+
+    if (i !=0) {
+      primary['flex'] = `0 1 ${newHeight}em`;
+      primary['alignSelf'] = "center";
+    } else {
+      //primary['border'] = "0.333em solid white";
+      primary['margin-left'] = "14em";
+    }
+
+    foop['image' + i] = primary;
+  }
+
+  return foop;
+});
+
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-  
-    //this.onFooClick = () => this.onFoo();
-
     this.state = {};
   }
 
   async componentDidMount() {
-    await this.onFoo();
+    await this.onFoo(this.props.initialImage);
+    window.addEventListener("popstate", (ev) => {
+      this.setState(ev.state);
+    });
   }
 
   async onFoo(newImage) {
-    let manifestIndexJson = await import(
-      './build/index.manifest/manifest.json'
-    );
-
-    console.log(newImage);
-
+    let manifestIndexJson = await import('./build/index.manifest/manifest.json');
     let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
     let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
     let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
 
-    this.setState({
-      manifestIndexJson: manifestIndexJson,
-      relatedImages: otherJson['results'],
-      activeImage: randomInt
-    });
+		var stateObj = {
+			manifestIndexJson: manifestIndexJson,
+			relatedImages: otherJson['results'],
+			activeImage: randomInt
+		};
+
+		history.pushState(stateObj, "image" + randomInt, "?" + randomInt + "");
+
+		this.setState(stateObj);
   }
 
   render() {
     let newUrl = null;
     let otherImages = null;
+    let firstImage = null;
+    let fooop = null;
 
     if (this.state.manifestIndexJson && this.state.manifestIndexJson[this.state.activeImage]) {
       newUrl = this.state.manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build", "");
@@ -43,59 +93,83 @@ class App extends React.Component {
       let manifestIndexJson = this.state.manifestIndexJson;
       let relatedImages = this.state.relatedImages;
 
+      let filterFunA = (otherImage, index) => {
+        let r = {};
+        r['otherUrl'] = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd/build", "");
+        r['style'] = styles['image' + index];
+        r['newIndex'] = otherImage.indexNumber;
+        return r;
+      };
+
       if (relatedImages) {
-        let vvv = 33;
-        otherImages = relatedImages.map((otherImage, index) => {
-          let otherUrl = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd/build", "");
-
-          let style = {};
-
-          let newHeight = vvv - 15 - (index * 1.5);
-          if (newHeight < 5) {
-            newHeight = 5;
-          }
-
-          let newIndex = null;
-
-          if (index == 0) {
-            style = {cursor: 'pointer', transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${vvv - index}em`, alignSelf: "auto"}
-          } else {
-            newIndex = otherImage.indexNumber;
-            style = {cursor: 'pointer', transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${newHeight}em`, alignSelf: "center"};
-          }
-
-          return (
-            <img key={otherUrl} style={style} src={otherUrl} onClick={this.onFoo.bind(this, newIndex)}/>
-          )
+        firstImage = relatedImages.map(filterFunA).find((otherImage, index) => {
+          return (index == 0);
         });
+
+        fooop = (color, alternativeColor) => {
+          return (
+            relatedImages.map(filterFunA).map((otherImage, index) => {
+              let extraStyle = { };
+
+              let img = (
+                <img 
+                  key={otherImage['otherUrl']} 
+                  style={extraStyle} className={otherImage['style']}
+                  src={otherImage['otherUrl']}
+                  onClick={this.onFoo.bind(this, otherImage['newIndex'])}
+                />
+              );
+
+              let span = null
+
+              if (index == 0) {
+                //extraStyle['border'] = "0.1em solid " + color;
+                extraStyle['borderLeft'] = "0.33em solid " + alternativeColor;
+                extraStyle['paddingLeft'] = "1em";
+                span = (img);
+              } else {
+                span = (img);
+              }
+
+              return (span);
+            })
+          );
+        };
       }
     }
 
-    let flexContainer = {
-      display: "flex",
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "flex-start",
-      alignContent: "flex-start",
-      alignItems: "flex-start"
-    };
-
-    return (
-      <div>
-        <div style={flexContainer}>
-          {otherImages}
+    if (firstImage) {
+      return (
+        <ImagePalette image={firstImage['otherUrl']} key={firstImage['otherUrl']}>
+          {({ backgroundColor, color, alternativeColor }) => (
+            <div style={{backgroundColor, color}}>
+              <p style={{margin: "1em", width: "12em", float: "left", position: "absolute"}}>
+                {firstImage['newIndex']}
+              </p>
+              <div className={styles.flexContainer}>
+                {fooop(color, alternativeColor)}
+              </div>
+            </div>
+          )}
+        </ImagePalette>
+      );
+    } else {
+      return (
+        <div className={styles.flexContainer}>
         </div>
-      </div>
-    );
+      );
+    }
   }
 }
 
+// pure functional is cooler?
 const Html = (props) => {
   return (
     <html>
       <head>
         <meta httpEquiv="Content-Type" content="text/html;charset=utf-8"/>
         <title>App</title>
+        <link rel="stylesheet" href="bundle.css"/>
       </head>
       <body>
         <div id="app">{props.children}</div>
