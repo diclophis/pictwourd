@@ -193,17 +193,17 @@ public class ParallelSearcher implements Runnable {
                       Document document = this.indexReader.document(tmp.getFileNameId());
 
                       //ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, this.indexReader);
-                      ImageSearcher searcher = new GenericFastImageSearcher(32, CEDD.class, true, this.indexReader);
-                      //ImageSearcher searcher = new GenericFastImageSearcher(32, FCTH.class, true, this.indexReader);
+                      //ImageSearcher searcher = new GenericFastImageSearcher(32, CEDD.class, true, this.indexReader);
+                      //ImageSearcher searcher = new GenericFastImageSearcher(32, Tamura.class, true, this.indexReader);
+                      ImageSearcher searcher = new GenericFastImageSearcher(32, FCTH.class, true, this.indexReader);
                       ImageSearchHits hits = searcher.search(document, this.indexReader);
 
                       // rerank
                       //System.out.println("---< filtering >-------------------------");
 
                       //RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
-                      //RerankFilter filter = new RerankFilter(CEDD.class, DocumentBuilder.FIELD_NAME_CEDD);
-
-                      //hits = filter.filter(hits, this.indexReader, document);
+                      RerankFilter filter = new RerankFilter(CEDD.class, DocumentBuilder.FIELD_NAME_CEDD);
+                      hits = filter.filter(hits, this.indexReader, document);
           
           //System.out.println(docFile);
 

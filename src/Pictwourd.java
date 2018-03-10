@@ -66,14 +66,15 @@ public class Pictwourd {
     //pin.addExtractor(AutoColorCorrelogram.class);
     //pin.addExtractor(JointHistogram.class);
 
+    //pin.addExtractor(Tamura.class);
+
+    pin.addExtractor(FCTH.class);
     pin.addExtractor(CEDD.class);
-    //pin.addExtractor(FCTH.class);
 
 /*
     pin.addExtractor(JCD.class);
     pin.addExtractor(ScalableColor.class);
     pin.addExtractor(EdgeHistogram.class);
-    pin.addExtractor(Tamura.class);
     pin.addExtractor(Gabor.class);
     pin.addExtractor(SimpleColorHistogram.class);
     pin.addExtractor(OpponentHistogram.class);
