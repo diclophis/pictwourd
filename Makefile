@@ -38,6 +38,8 @@ fetch:
 	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; rm -Rf rm -Rf $(BUILD)/*js $(BUILD)/*html; npm run build && npm run pack'
 	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* $(BUILD)
 
+build: $(classes)
+
 run: $(classes)
 	$(JAVA) -Xmx3600m -classpath $(jars_list):$(BUILD) Pictwourd /home/ubuntu/pictwourd/build/index.attic
 
@@ -45,7 +47,7 @@ clean:
 	rm -Rf $(BUILD)/*class
 
 $(BUILD)/%.class: %.java
-	$(JAVAC) -Xlint:unchecked -cp $(jars_list):. -d $(BUILD) -sourcepath src $<
+	$(JAVAC) -Xlint:unchecked -Xdiags:verbose -cp $(jars_list):. -d $(BUILD) -sourcepath src $<
 
 image:
 	docker build -f Dockerfile -t $(IMAGE) .

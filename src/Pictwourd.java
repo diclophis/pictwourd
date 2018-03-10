@@ -51,22 +51,26 @@ public class Pictwourd {
 
 		String indexPath = "build/index";
 		String imagesPath = args[0];
-		String shouldReindexImages = null;
+		boolean shouldReindexImages = true;
+		boolean shouldSearchImages = true;
+		boolean shouldManifestImages = true;
 
-    if (args.length == 2) {
-		  shouldReindexImages = args[1];
-    }
+    //if (args.length == 2) {
+		//  shouldReindexImages = args[1];
+    //}
 
     long time = System.currentTimeMillis();
     ParallelIndexer pin = new ParallelIndexer(numOfThreads, indexPath, args[0]);
 
     pin.addExtractor(ColorLayout.class);
+    pin.addExtractor(AutoColorCorrelogram.class);
+
+/*
     pin.addExtractor(CEDD.class);
     pin.addExtractor(FCTH.class);
     pin.addExtractor(JCD.class);
     pin.addExtractor(ScalableColor.class);
     pin.addExtractor(EdgeHistogram.class);
-    pin.addExtractor(AutoColorCorrelogram.class);
     pin.addExtractor(Tamura.class);
     pin.addExtractor(Gabor.class);
     pin.addExtractor(SimpleColorHistogram.class);
@@ -74,12 +78,13 @@ public class Pictwourd {
     pin.addExtractor(JointHistogram.class);
     pin.addExtractor(LuminanceLayout.class);
     pin.addExtractor(PHOG.class);
+*/
 
     //pin.addExtractor(ACCID.class);
     //pin.addExtractor(COMO.class);
     //pin.setCustomDocumentBuilder(MetadataBuilder.class);
 
-    if (shouldReindexImages != null) {
+    if (shouldReindexImages) {
       System.out.println("---< indexing >-------------------------");
       Thread t = new Thread(pin);
       t.start();
@@ -100,7 +105,7 @@ public class Pictwourd {
 
     ParallelSearcher search = new ParallelSearcher(reader);
 
-    if (true) {
+    if (shouldSearchImages) {
       Thread t = new Thread(search);
       t.start();
       while (!search.hasEnded()) {
@@ -113,20 +118,22 @@ public class Pictwourd {
       }
     }
 
-    File indexManifestDir = new File("build/index.manifest");
-    indexManifestDir.mkdir();
+    if (shouldManifestImages) {
+      File indexManifestDir = new File("build/index.manifest");
+      indexManifestDir.mkdir();
 
-    Writer writer = new BufferedWriter(
-                      new OutputStreamWriter(
-                        new FileOutputStream(
-                          String.format("build/index.manifest/manifest.json")
+      Writer writer = new BufferedWriter(
+                        new OutputStreamWriter(
+                          new FileOutputStream(
+                            String.format("build/index.manifest/manifest.json")
+                          )
                         )
-                      )
-                    );
+                      );
 
-    Gson gson = new Gson();
-    writer.write(gson.toJson(search.getRawIndex()));
-    writer.close();
+      Gson gson = new Gson();
+      writer.write(gson.toJson(search.getRawIndex()));
+      writer.close();
+    }
 
     System.exit(0);
   }

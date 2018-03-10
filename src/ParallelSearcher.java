@@ -81,16 +81,28 @@ public class ParallelSearcher implements Runnable {
           Hashtable<String, String> docu = new Hashtable<String, String>();
           docu.put("id", String.format("%d", i));
           docu.put("filename", docFile);
+
+
           rawIndex.add(docu);
           allImageIds.add(i);
         }
       } catch (IOException e) {
         System.out.println("wtf");
+        System.out.println(e.toString());
         System.exit(1);
       }
     }
 
     public ArrayList getRawIndex() {
+      java.util.stream.Stream<Hashtable<String, String>> remappedStream = null; 
+      
+      remappedStream = this.rawIndex.stream();
+      
+      remappedStream.map((s) -> {
+        s.put("fart", "bip");
+        return s;
+      });
+      
       return this.rawIndex;
     }
 
@@ -103,9 +115,12 @@ public class ParallelSearcher implements Runnable {
 
     class Producer implements Runnable {
       private List<Integer> localList;
+      private ArrayList<Hashtable<String, String>> localListFull;
 
-      public Producer(List<Integer> inLocalList) {
+      public Producer(List<Integer> inLocalList, ArrayList<Hashtable<String, String>> inLocalListFull) {
           this.localList = inLocalList;
+          this.localListFull = inLocalListFull;
+
           overallCount = 0;
           queue.clear();
       }
@@ -115,7 +130,7 @@ public class ParallelSearcher implements Runnable {
         for (Integer path : localList) {
           next = path;
           try {
-            queue.put(new WorkItem(next));
+            queue.put(new WorkItem(next, localListFull.get(next).get("filename")));
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
@@ -124,7 +139,7 @@ public class ParallelSearcher implements Runnable {
         Integer path = null;
         for (int i = 0; i < numOfThreads * 3; i++) {
           try {
-            queue.put(new WorkItem(path));
+            queue.put(new WorkItem(path, null));
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
@@ -134,21 +149,29 @@ public class ParallelSearcher implements Runnable {
 
     class WorkItem {
       private Integer fileNameId;
+      private String filename;
 
-      public WorkItem(Integer pathId) {
+      public WorkItem(Integer pathId, String filename) {
           this.fileNameId = pathId;
+          this.filename = filename;
       }
 
       public Integer getFileNameId() {
           return fileNameId;
+      }
+
+      public String getFileName() {
+          return filename;
       }
     }
 
     class Consumer implements Runnable {
         private IndexReader indexReader;
         private boolean locallyEnded;
+        private ArrayList<Hashtable<String, String>> localListFull;
 
-        public Consumer(IndexReader inIndexReader) {
+        public Consumer(IndexReader inIndexReader, ArrayList<Hashtable<String, String>> inLocalListFull) {
+          this.localListFull = inLocalListFull;
           this.indexReader = inIndexReader;
           this.locallyEnded = false;
         }
@@ -176,6 +199,16 @@ public class ParallelSearcher implements Runnable {
                       //System.out.println("---< filtering >-------------------------");
                       RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
                       hits = filter.filter(hits, this.indexReader, document);
+          
+          //System.out.println(docFile);
+
+					BufferedImage bimg = ImageIO.read(new File(tmp.getFileName()));
+					int width = bimg.getWidth();
+					int height = bimg.getHeight();
+
+          
+          this.localListFull.get(tmp.getFileNameId()).put("width", String.format("%d", width));
+          this.localListFull.get(tmp.getFileNameId()).put("height", String.format("%d", height));
 
                          Writer writer = new BufferedWriter(
                                            new OutputStreamWriter(
@@ -184,6 +217,8 @@ public class ParallelSearcher implements Runnable {
                                              )
                                            )
                                          );
+
+//java.util.stream.Stream foop = Hash.stream(hits); //.stream();
 
 												 writer.write(gson.toJson(hits));
                          writer.close();
@@ -198,11 +233,11 @@ public class ParallelSearcher implements Runnable {
     public boolean search() {
       try {
         Thread p, c, m;
-        p = new Thread(new Producer(this.allImageIds), "Producer");
+        p = new Thread(new Producer(this.allImageIds, this.rawIndex), "Producer");
         p.start();
         LinkedList<Thread> threads = new LinkedList<Thread>();
         for (int i = 0; i < numOfThreads; i++) {
-          c = new Thread(new Consumer(this.indexReader), String.format("Consumer-%02d", i + 1));
+          c = new Thread(new Consumer(this.indexReader, this.rawIndex), String.format("Consumer-%02d", i + 1));
           c.start();
           threads.add(c);
         }
