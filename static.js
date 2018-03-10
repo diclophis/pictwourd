@@ -18,7 +18,8 @@ var styles = cssInJS((context) => {
       flexWrap: "wrap",
       justifyContent: "flex-start",
       alignContent: "flex-start",
-      alignItems: "flex-start"
+      alignItems: "flex-start",
+      marginLeft: "0.5em"
     }
   };
 
@@ -44,12 +45,16 @@ var styles = cssInJS((context) => {
       //primary['width'] = `${newHeight}em`;
       primary['max-width'] = "31%"; ////"21.23%";
       primary['max-height'] = "27%";
-      primary['alignSelf'] = "center";
+      primary['alignSelf'] = "flex-start";
+      primary['margin-top'] = "3em";
+      primary['margin-left'] = "1em";
     } else {
       primary['flex'] = `0 1 auto`;
       primary['max-height'] = "35.5em";
+      primary['max-width'] = "44%";
       primary['margin-left'] = "13em";
-      primary['margin-bottom'] = "2em";
+      primary['margin-bottom'] = "1em";
+      primary['padding'] = "1em 0 1em 0";
     }
 
     foop['image' + i] = primary;
@@ -63,7 +68,7 @@ var styles = cssInJS((context) => {
     if (i != 0) {
     bizz['image' + i] = {
       //maxHeight: '7em'
-      maxWidth: '29%'
+      maxWidth: '28%'
       //width: `40%`,
       //flex: `0 1 ${vvv * 1.333}em`,
       //flex: `0 0`,
@@ -102,33 +107,27 @@ class App extends React.Component {
   async componentDidMount() {
     await this.onFoo(this.props.initialImage);
     window.addEventListener("popstate", (ev) => {
-      console.log("popstate");
       this.setState(ev.state);
     });
   }
+  
+  componentDidUpdate() {
+    if (this.prime) {
+      this.prime.scrollIntoView({behavior: "smooth"});
+    }
+  }
 
   async onFoo(newImage) {
-    console.log("onFooStart");
-
-    //let manifestIndexJson = await import('./build/index.manifest/manifest.json');
-
     let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
     let jsonFileToLoad = './' + randomInt.toString() + '.json'
-    console.log("onFooStart2");
     let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
 
 		var stateObj = {
-			//manifestIndexJson: manifestIndexJson,
 			relatedImages: otherJson['results'],
 			activeImage: randomInt
 		};
 
 		history.pushState(stateObj, "image" + randomInt, "?" + randomInt + "#prime");
-    if (this.prime) {
-      this.prime.scrollIntoView();
-    }
-
-    console.log("onFooDone");
 
 		this.setState(stateObj);
   }
@@ -140,14 +139,14 @@ class App extends React.Component {
     let fooop = null;
 
     if (manifestIndexJson && manifestIndexJson[this.state.activeImage]) {
-      newUrl = manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build", "");
+      newUrl = manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build/", "");
 
       //let manifestIndexJson = this.state.manifestIndexJson;
       let relatedImages = this.state.relatedImages;
 
       let filterFunA = (otherImage, index) => {
         let r = {};
-        r['otherUrl'] = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd/build", "");
+        r['otherUrl'] = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd/build/", "");
         r['style'] = styles['image' + index];
         r['newIndex'] = otherImage.indexNumber;
         return r;
@@ -159,7 +158,6 @@ class App extends React.Component {
         });
 
         fooop = (color, alternativeColor) => {
-          console.log("fooop");
           return (
             relatedImages.map(filterFunA).map((otherImage, index) => {
               let extraStyle = { };
@@ -178,7 +176,7 @@ class App extends React.Component {
               if (index == 0) {
                 //extraStyle['border'] = "0.1em solid " + color;
                 extraStyle['borderLeft'] = "0.33em solid " + alternativeColor;
-                extraStyle['paddingLeft'] = "1em";
+                extraStyle['paddingLeft'] = "2em";
                 span = (img);
               } else {
                 span = (img);
@@ -202,6 +200,9 @@ class App extends React.Component {
 									<h1 style={{margin: 0}}>
 										<a style={{ color }} href="?">?</a>{firstImage['newIndex']}
 									</h1>
+                  <span>foo</span><br/>
+                  <span>bar</span><br/>
+                  <span>baz</span><br/>
 								</p>
 								<div className={styles.flexContainer}>
 									{fooop(color, alternativeColor)}
@@ -214,6 +215,11 @@ class App extends React.Component {
     } else {
       return (
         <div ref={node => this.prime = node} id="prime" className={styles.flexContainer}>
+          <p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
+            <h1 style={{margin: 0}}>
+              <a href="?">?</a> ...
+            </h1>
+          </p>
         </div>
       );
     }
