@@ -68,11 +68,14 @@ class App extends React.Component {
   async componentDidMount() {
     await this.onFoo(this.props.initialImage);
     window.addEventListener("popstate", (ev) => {
+      console.log("popstate");
       this.setState(ev.state);
     });
   }
 
   async onFoo(newImage) {
+    console.log("onFooStart");
+
     let manifestIndexJson = await import('./build/index.manifest/manifest.json');
     let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
     let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
@@ -85,6 +88,8 @@ class App extends React.Component {
 		};
 
 		history.pushState(stateObj, "image" + randomInt, "?" + randomInt + "");
+
+    console.log("onFooDone");
 
 		this.setState(stateObj);
   }
@@ -115,6 +120,7 @@ class App extends React.Component {
         });
 
         fooop = (color, alternativeColor) => {
+          console.log("fooop");
           return (
             relatedImages.map(filterFunA).map((otherImage, index) => {
               let extraStyle = { };
@@ -150,7 +156,7 @@ class App extends React.Component {
       return (
         <ImagePalette image={firstImage['otherUrl']} key={firstImage['otherUrl']}>
           {({ backgroundColor, color, alternativeColor }) => (
-            <div style={{backgroundColor, color}}>
+            <div style={{backgroundColor, color, transition: "background-color 1s" }}>
               <p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
                 <h1 style={{margin: 0}}>
                   <a style={{ color }} href="?">?</a>{firstImage['newIndex']}
