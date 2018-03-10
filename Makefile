@@ -27,6 +27,8 @@ all:
 	echo $(classes)
 	echo $(BUILD)/$(IMAGE_TAG)
 
+pipeline: build run sync fetch
+
 reset:
 	rm -Rf $(BUILD)/index $(BUILD)/index.config $(BUILD)/index.manifest
 
@@ -36,7 +38,8 @@ sync:
 fetch:
 	rm -Rf $(BUILD)/*js $(BUILD)/*html
 	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; rm -Rf rm -Rf $(BUILD)/*js $(BUILD)/*html; npm run build && npm run pack'
-	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/* $(BUILD)
+	rsync -azP -v -r ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/{*.html,*js} $(BUILD)
+	firefox http://localhost:8000
 
 build: $(classes)
 

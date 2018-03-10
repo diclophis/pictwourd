@@ -62,12 +62,14 @@ public class Pictwourd {
     long time = System.currentTimeMillis();
     ParallelIndexer pin = new ParallelIndexer(numOfThreads, indexPath, args[0]);
 
-    pin.addExtractor(ColorLayout.class);
-    pin.addExtractor(AutoColorCorrelogram.class);
+    //pin.addExtractor(ColorLayout.class);
+    //pin.addExtractor(AutoColorCorrelogram.class);
+    //pin.addExtractor(JointHistogram.class);
+
+    pin.addExtractor(CEDD.class);
+    //pin.addExtractor(FCTH.class);
 
 /*
-    pin.addExtractor(CEDD.class);
-    pin.addExtractor(FCTH.class);
     pin.addExtractor(JCD.class);
     pin.addExtractor(ScalableColor.class);
     pin.addExtractor(EdgeHistogram.class);
@@ -75,7 +77,6 @@ public class Pictwourd {
     pin.addExtractor(Gabor.class);
     pin.addExtractor(SimpleColorHistogram.class);
     pin.addExtractor(OpponentHistogram.class);
-    pin.addExtractor(JointHistogram.class);
     pin.addExtractor(LuminanceLayout.class);
     pin.addExtractor(PHOG.class);
 */
