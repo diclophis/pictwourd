@@ -1,29 +1,90 @@
 import React from 'react';
 
+//import manifestIndexJson from './build/index.manifest/manifest.json';
+
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { message: '' };
+  
+    //this.onFooClick = () => this.onFoo();
+
+    this.state = {};
   }
 
   async componentDidMount() {
-    this.setState({ message: 'loading...' });
-    if (typeof(window) != 'undefined') {
-      console.log("fart");
-      let manifestIndexJson = await import(
-        './build/index.manifest/manifest.json'
-      );
-      this.setState({ message: manifestIndexJson[0]["filename"] });
-    }
+    await this.onFoo();
+  }
+
+  async onFoo(newImage) {
+    let manifestIndexJson = await import(
+      './build/index.manifest/manifest.json'
+    );
+
+    console.log(newImage);
+
+    let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
+    let jsonFileToLoad = './build/index.manifest/' + randomInt.toString() + '.json'
+    let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
+
+    this.setState({
+      manifestIndexJson: manifestIndexJson,
+      relatedImages: otherJson['results'],
+      activeImage: randomInt
+    });
   }
 
   render() {
-    let { message } = this.state;
+    let newUrl = null;
+    let otherImages = null;
+
+    if (this.state.manifestIndexJson && this.state.manifestIndexJson[this.state.activeImage]) {
+      newUrl = this.state.manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd", "");
+
+      let manifestIndexJson = this.state.manifestIndexJson;
+      let relatedImages = this.state.relatedImages;
+
+      if (relatedImages) {
+        let vvv = 33;
+        otherImages = relatedImages.map((otherImage, index) => {
+          let otherUrl = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd", "");
+
+          let style = {};
+
+          let newHeight = vvv - 15 - (index * 1.5);
+          if (newHeight < 5) {
+            newHeight = 5;
+          }
+
+          let newIndex = null;
+
+          if (index == 0) {
+            style = {transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${vvv - index}em`, alignSelf: "auto"}
+          } else {
+            newIndex = otherImage.indexNumber;
+            style = {transition: "none 0s", order: 0, margin: "0.5em", flex: `0 1 ${newHeight}em`, alignSelf: "center"};
+          }
+
+          return (
+            <img key={otherUrl} style={style} src={otherUrl} onClick={this.onFoo.bind(this, newIndex)}/>
+          )
+        });
+      }
+    }
+
+    let flexContainer = {
+      display: "flex",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "flex-start",
+      alignContent: "flex-start",
+      alignItems: "flex-start"
+    };
+
     return (
-      <div className="App">
-        <p className="App-intro">
-          { message }
-        </p>
+      <div>
+        <div style={flexContainer}>
+          {otherImages}
+        </div>
       </div>
     );
   }
@@ -38,7 +99,6 @@ const Html = (props) => {
       </head>
       <body>
         <div id="app">{props.children}</div>
-        <script src="3.static.js"></script>
       </body>
     </html>
   );

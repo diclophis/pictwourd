@@ -1,17 +1,21 @@
+// TODO: chunk splitting and webpack 4x
+
 const path = require('path');
 const webpack = require('webpack');
+const glob = require("glob");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+const InlineChunkManifestHtmlWebpackPlugin = require('inline-chunk-manifest-html-webpack-plugin');
+const WebpackManifestPlugin = require('webpack-manifest-plugin');
+
+
+const theEntries = {}
+
+theEntries['ui'] = ['./browser.js'];
 
 module.exports = {
   module: {
     rules: [
-    /*
-      {
-        test: /\.json$/,
-        use: {
-          loader: 'json-loader'
-        }
-      },
-    */
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
@@ -22,60 +26,32 @@ module.exports = {
     ],
   },
 
-  entry: {
-    'ui': './browser.js',
-    'data': './build/index.manifest/manifest.json',
-  },
+  entry: theEntries,
 
   plugins: [
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify("production")
     }),
 
-    new webpack.optimize.CommonsChunkPlugin({
-      name: "data",
-      chunks: ["data"],
-      minChunks: Infinity
+    new WebpackManifestPlugin(),
+
+    new ScriptExtHtmlWebpackPlugin(),
+
+    new HtmlWebpackPlugin({
+      template: './build/index.template.html',
     }),
-
-    new webpack.optimize.CommonsChunkPlugin({
-      name: "ui",
-      minChunks: Infinity
-    }),
-
-    new webpack.optimize.AggressiveSplittingPlugin({
-      minSize: 300000,
-      maxSize: 400000
-    }),
-
-    /*
-
-
-    new webpack.optimize.CommonsChunkPlugin({
-        name: "main",
-        chunks: ["main"]
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: "manifest",
-      chunks: ["manifest"]
-    })
-    */
   ],
 
   cache: true,
 
   resolve: {
     modules: [
-      'node_modules',
-      path.resolve('./build')
+      'node_modules'
     ]
   },
 
   output: {
-    filename: '[name].static.js',
-    chunkFilename: '[name].static.js',
+    filename: '[hash]-[name].compiled.js',
     path: path.resolve(__dirname, 'build')
   },
-
-  recordsPath: path.join(__dirname, "records.json")
 };
