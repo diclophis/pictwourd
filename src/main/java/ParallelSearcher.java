@@ -1,233 +1,193 @@
 //
 
-import net.semanticmetadata.lire.aggregators.AbstractAggregator;
-import net.semanticmetadata.lire.aggregators.BOVW;
 import net.semanticmetadata.lire.builders.*;
-import net.semanticmetadata.lire.classifiers.Cluster;
-import net.semanticmetadata.lire.classifiers.KMeans;
-import net.semanticmetadata.lire.classifiers.ParallelKMeans;
-import net.semanticmetadata.lire.imageanalysis.features.Extractor;
-import net.semanticmetadata.lire.imageanalysis.features.GlobalFeature;
-import net.semanticmetadata.lire.imageanalysis.features.LocalFeature;
-import net.semanticmetadata.lire.imageanalysis.features.LocalFeatureExtractor;
-import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
-import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
-import net.semanticmetadata.lire.imageanalysis.features.global.JCD;
-import net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor;
-import net.semanticmetadata.lire.utils.FileUtils;
-import net.semanticmetadata.lire.utils.ImageUtils;
-import net.semanticmetadata.lire.utils.LuceneUtils;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.IndexWriter;
-
-import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
 import net.semanticmetadata.lire.imageanalysis.features.global.*;
-import net.semanticmetadata.lire.imageanalysis.features.global.joint.JointHistogram;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Logger;
-
-import org.apache.lucene.index.IndexReader;
-
-import net.semanticmetadata.lire.imageanalysis.features.LocalFeature;
-
-import java.util.List;
-
 import net.semanticmetadata.lire.searchers.ImageSearchHits;
 import net.semanticmetadata.lire.searchers.ImageSearcher;
 import net.semanticmetadata.lire.searchers.GenericFastImageSearcher;
 import net.semanticmetadata.lire.filters.RerankFilter;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.List;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+
 import com.google.gson.Gson;
 
-public class ParallelSearcher implements Runnable {
-    private IndexReader indexReader = null;
-    private boolean searchingFinished = false;
+class ParallelSearcher implements Runnable {
+    private final IndexReader indexReader;
+    private boolean searchingFinished;
 
-    private int overallCount = -1;
+    private int overallCount = - 1;
 
-    private int queueCapacity = 1024;
-    private LinkedBlockingQueue<WorkItem> queue = new LinkedBlockingQueue<>(queueCapacity);
+    private final int queueCapacity = 1024;
+    private final LinkedBlockingQueue<ParallelSearcher.WorkItem> queue = new LinkedBlockingQueue<> (queueCapacity);
 
-    private int numOfThreads = 64;
+    private final int numOfThreads = 64;
 
-    private List<Integer> allImageIds = null;
-    private ArrayList<Hashtable<String, String>> rawIndex = null;
+    private final List<Integer> allImageIds;
+    private final ArrayList<Hashtable<String, String>> rawIndex;
 
-    public ParallelSearcher(IndexReader inIndexReader) {
-      this.indexReader = inIndexReader;
+    public ParallelSearcher (IndexReader inIndexReader) {
+        indexReader = inIndexReader;
 
-      this.allImageIds = new ArrayList<Integer>();
+        allImageIds = new ArrayList<> ();
 
-      this.rawIndex = new ArrayList<Hashtable<String, String>>();
+        rawIndex = new ArrayList<> ();
 
-      try {
-        for (int i = 0; i < this.indexReader.numDocs(); i++) {
-          String docFile = this.indexReader.document(i).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
-          Hashtable<String, String> docu = new Hashtable<String, String>();
-          docu.put("id", String.format("%d", i));
-          docu.put("filename", docFile);
+        try {
+            for (int i = 0; i < indexReader.numDocs (); i++) {
+                String docFile = indexReader.document (i).getValues (DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
+                Hashtable<String, String> docu = new Hashtable<> ();
+                docu.put ("id", String.format ("%d", i));
+                docu.put ("filename", docFile);
 
 
-          rawIndex.add(docu);
-          allImageIds.add(i);
+                rawIndex.add (docu);
+                allImageIds.add (i);
+            }
+        } catch (IOException e) {
+            System.out.println ("wtf");
+            System.out.println (e);
+            System.exit (1);
         }
-      } catch (IOException e) {
-        System.out.println("wtf");
-        System.out.println(e.toString());
-        System.exit(1);
-      }
     }
 
-    public ArrayList getRawIndex() {
-      java.util.stream.Stream<Hashtable<String, String>> remappedStream = null; 
-      
-      remappedStream = this.rawIndex.stream();
-      
-      remappedStream.map((s) -> {
-        s.put("fart", "bip");
-        return s;
-      });
-      
-      return this.rawIndex;
+    ArrayList getRawIndex () {
+//        Stream<Hashtable<String, String>> remappedStream = null;
+//
+//        remappedStream = this.rawIndex.stream ();
+//
+//        remappedStream.map (s -> {
+//            s.put ("fart", "bip");
+//            return s;
+//        });
+
+        return rawIndex;
     }
 
-    public void run() {
-
-      search();
-
-      searchingFinished = true;
+    @Override
+    public void run () {
+        search ();
+        searchingFinished = true;
     }
 
-    class Producer implements Runnable {
-      private List<Integer> localList;
-      private ArrayList<Hashtable<String, String>> localListFull;
+    private class Producer implements Runnable {
+        private final List<Integer> localList;
+        private final ArrayList<Hashtable<String, String>> localListFull;
 
-      public Producer(List<Integer> inLocalList, ArrayList<Hashtable<String, String>> inLocalListFull) {
-          this.localList = inLocalList;
-          this.localListFull = inLocalListFull;
+        public Producer (List<Integer> inLocalList, ArrayList<Hashtable<String, String>> inLocalListFull) {
+            localList = inLocalList;
+            localListFull = inLocalListFull;
 
-          overallCount = 0;
-          queue.clear();
-      }
-
-      public void run() {
-        Integer next;
-        for (Integer path : localList) {
-          next = path;
-          try {
-            queue.put(new WorkItem(next, localListFull.get(next).get("filename")));
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+            overallCount = 0;
+            queue.clear ();
         }
 
-        Integer path = null;
-        for (int i = 0; i < numOfThreads * 3; i++) {
-          try {
-            queue.put(new WorkItem(path, null));
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-      }
-    }
-
-    class WorkItem {
-      private Integer fileNameId;
-      private String filename;
-
-      public WorkItem(Integer pathId, String filename) {
-          this.fileNameId = pathId;
-          this.filename = filename;
-      }
-
-      public Integer getFileNameId() {
-          return fileNameId;
-      }
-
-      public String getFileName() {
-          return filename;
-      }
-    }
-
-    class Consumer implements Runnable {
-        private IndexReader indexReader;
-        private boolean locallyEnded;
-        private ArrayList<Hashtable<String, String>> localListFull;
-
-        public Consumer(IndexReader inIndexReader, ArrayList<Hashtable<String, String>> inLocalListFull) {
-          this.localListFull = inLocalListFull;
-          this.indexReader = inIndexReader;
-          this.locallyEnded = false;
-        }
-
-        public void run() {
-            Gson gson = new Gson();
-
-            WorkItem tmp = null;
-            while (!locallyEnded) {
+        @Override
+        public void run () {
+            Integer next;
+            for (int path : this.localList) {
+                next = path;
                 try {
-                    if (queue.peek()==null) {
-                        Thread.sleep((long) ((Math.random()/2+0.5) * 10000)); // sleep for a second if queue is empty.
+                    ParallelSearcher.this.queue.put (new ParallelSearcher.WorkItem (next, this.localListFull.get (next).get ("filename")));
+                } catch (InterruptedException e) {
+                    e.printStackTrace ();
+                }
+            }
+
+            for (int i = 0; i < ParallelSearcher.this.numOfThreads * 3; i++) {
+                try {
+                    ParallelSearcher.this.queue.put (new ParallelSearcher.WorkItem (0, null));
+                } catch (InterruptedException e) {
+                    e.printStackTrace ();
+                }
+            }
+        }
+    }
+
+    private class WorkItem {
+        private final int fileNameId;
+        private final String filename;
+
+        WorkItem (int pathId, String filename) {
+            fileNameId = pathId;
+            this.filename = filename;
+        }
+
+        int getFileNameId () {
+            return this.fileNameId;
+        }
+
+        String getFileName () {
+            return this.filename;
+        }
+    }
+
+    private class Consumer implements Runnable {
+        private boolean locallyEnded;
+
+        private final IndexReader indexReader;
+        private final ArrayList<Hashtable<String, String>> localListFull;
+
+        Consumer (IndexReader inIndexReader, ArrayList<Hashtable<String, String>> inLocalListFull) {
+            localListFull = inLocalListFull;
+            indexReader = inIndexReader;
+            locallyEnded = false;
+        }
+
+        @Override
+        public void run () {
+            Gson gson = new Gson ();
+
+            ParallelSearcher.WorkItem tmp = null;
+            while (! this.locallyEnded) {
+                try {
+                    if (ParallelSearcher.this.queue.peek () == null) {
+                        Thread.sleep ((long) ((Math.random () / 2 + 0.5) * 10000)); // sleep for a second if queue is empty.
                     }
-                    tmp = queue.take();
-                    if (tmp.getFileNameId() == null) locallyEnded = true;
-                    else overallCount++;
-                    if (!locallyEnded) {
-                      // search
-                      Document document = this.indexReader.document(tmp.getFileNameId());
+                    tmp = ParallelSearcher.this.queue.take ();
+                    if (tmp.getFileName () == null) this.locallyEnded = true;
+                    else ParallelSearcher.this.overallCount++;
+                    if (! this.locallyEnded) {
+                        // search
+                        Document document = indexReader.document (tmp.getFileNameId ());
 
-                      //ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, this.indexReader);
-                      //ImageSearcher searcher = new GenericFastImageSearcher(32, CEDD.class, true, this.indexReader);
-                      //ImageSearcher searcher = new GenericFastImageSearcher(32, Tamura.class, true, this.indexReader);
-                      ImageSearcher searcher = new GenericFastImageSearcher(32, FCTH.class, true, this.indexReader);
-                      ImageSearchHits hits = searcher.search(document, this.indexReader);
+                        //ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, this.indexReader);
+                        //ImageSearcher searcher = new GenericFastImageSearcher(32, CEDD.class, true, this.indexReader);
+                        //ImageSearcher searcher = new GenericFastImageSearcher(32, Tamura.class, true, this.indexReader);
+                        ImageSearcher searcher = new GenericFastImageSearcher (32, FCTH.class, true, indexReader);
+                        ImageSearchHits hits = searcher.search (document, indexReader);
 
-                      // rerank
-                      //System.out.println("---< filtering >-------------------------");
+                        // rerank
+                        //System.out.println("---< filtering >-------------------------");
 
-                      //RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
-                      RerankFilter filter = new RerankFilter(CEDD.class, DocumentBuilder.FIELD_NAME_CEDD);
-                      hits = filter.filter(hits, this.indexReader, document);
-          
-          //System.out.println(docFile);
+                        //RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
+                        RerankFilter filter = new RerankFilter (CEDD.class, DocumentBuilder.FIELD_NAME_CEDD);
+                        hits = filter.filter (hits, indexReader, document);
 
-					BufferedImage bimg = ImageIO.read(new File(tmp.getFileName()));
-					int width = bimg.getWidth();
-					int height = bimg.getHeight();
+                        //System.out.println(docFile);
 
-          
-          this.localListFull.get(tmp.getFileNameId()).put("width", String.format("%d", width));
-          this.localListFull.get(tmp.getFileNameId()).put("height", String.format("%d", height));
+                        BufferedImage bimg = ImageIO.read (new File (tmp.getFileName ()));
+                        int width = bimg.getWidth ();
+                        int height = bimg.getHeight ();
 
-                         Writer writer = new BufferedWriter(
-                                           new OutputStreamWriter(
-																		         new FileOutputStream(
-                                               String.format("build/index.manifest/%d.json", tmp.getFileNameId())
-                                             )
-                                           )
-                                         );
+
+                        localListFull.get (tmp.getFileNameId ()).put ("width", String.format ("%d", width));
+                        localListFull.get (tmp.getFileNameId ()).put ("height", String.format ("%d", height));
+
+                        Writer writer = new BufferedWriter (new OutputStreamWriter (new FileOutputStream (String.format ("build/index.manifest/%d.json", tmp.getFileNameId ()))));
 
 //java.util.stream.Stream foop = Hash.stream(hits); //.stream();
 
-												 writer.write(gson.toJson(hits));
-                         writer.close();
-									 }
+                        writer.write (gson.toJson (hits));
+                        writer.close ();
+                    }
                 } catch (InterruptedException e) {
                 } catch (Exception e) {
                 }
@@ -235,29 +195,29 @@ public class ParallelSearcher implements Runnable {
         }
     }
 
-    public boolean search() {
-      try {
-        Thread p, c, m;
-        p = new Thread(new Producer(this.allImageIds, this.rawIndex), "Producer");
-        p.start();
-        LinkedList<Thread> threads = new LinkedList<Thread>();
-        for (int i = 0; i < numOfThreads; i++) {
-          c = new Thread(new Consumer(this.indexReader, this.rawIndex), String.format("Consumer-%02d", i + 1));
-          c.start();
-          threads.add(c);
-        }
+    public boolean search () {
+        try {
+            Thread p, c, m;
+            p = new Thread (new Producer (allImageIds, rawIndex), "Producer");
+            p.start ();
+            LinkedList<Thread> threads = new LinkedList<Thread> ();
+            for (int i = 0; i < this.numOfThreads; i++) {
+                c = new Thread (new Consumer (indexReader, rawIndex), String.format ("Consumer-%02d", i + 1));
+                c.start ();
+                threads.add (c);
+            }
 
-        for (Thread thread : threads) {
-            thread.join();
+            for (Thread thread : threads) {
+                thread.join ();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
         }
-      } catch (InterruptedException e) {
-          e.printStackTrace();
-      }
 
         return true;
     }
 
-    public boolean hasEnded() {
-        return searchingFinished;
+    public boolean hasEnded () {
+        return this.searchingFinished;
     }
 }
