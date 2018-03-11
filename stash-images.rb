@@ -6,7 +6,9 @@ require 'fileutils'
 all_images = Dir.glob(ARGV[0])
 
 all_images.each { |image|
-  sha256 = Digest::SHA256.file image
+  next unless File.file?(image)
+
+  sha256 = Digest::SHA256.file(image)
   size_of_chunk = sha256.hexdigest.length / 8
 
   each_chunk = sha256.hexdigest.chars.each_slice(size_of_chunk).collect { |a| a.join }
