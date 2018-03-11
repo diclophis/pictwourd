@@ -105,7 +105,7 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
-    await this.onFoo(this.props.initialImage);
+    await this.onFoo(this.props.initialImage || false);
     window.addEventListener("popstate", (ev) => {
       this.setState(ev.state);
     });
@@ -117,8 +117,12 @@ class App extends React.Component {
     }
   }
 
-  async onFoo(newImage) {
-    let randomInt = newImage ? newImage : (parseInt(Math.random() * manifestIndexJson.length) + 1);
+  async onFoo(newImage, ev) {
+    if (ev) {
+      ev.preventDefault();
+    }
+
+    let randomInt = (newImage === false ? (parseInt(Math.random() * manifestIndexJson.length)) : newImage);
     let jsonFileToLoad = './' + randomInt.toString() + '.json'
     let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
 
@@ -198,7 +202,9 @@ class App extends React.Component {
 							<div ref={node => this.prime = node} id="prime" style={{backgroundColor, color, transition: "background-color 1s" }}>
 								<p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
 									<h1 style={{margin: 0}}>
-										<a style={{ color }} href="?">?</a>{firstImage['newIndex']}
+										<a 
+                      onClick={this.onFoo.bind(this, false)}
+                      style={{ color }} href="?">?</a>{firstImage['newIndex']}
 									</h1>
                   <span>foo</span><br/>
                   <span>bar</span><br/>
