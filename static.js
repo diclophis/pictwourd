@@ -29,35 +29,34 @@ var styles = cssInJS((context) => {
       newHeight = 5;
     }
 
-    let primary = {
-        cursor: 'pointer',
-        transition: "none 0s",
+    let linkPrimary = {
         order: 0,
-        margin: "0.5em", 
-        //width: `70%`,
-        //flex: `0 1 auto`,
+        margin: "0.5em",
+        alignSelf: "auto"
+    }
+
+    let imagePrimary = {
+        maxWidth: '100%',
         alignSelf: "auto",
-        //maxHeight: "70%"
     }
 
     if (i !=0) {
-      //primary['flex'] = `1 1 16em`;
-      //primary['width'] = `${newHeight}em`;
-      primary['max-width'] = "31%"; ////"21.23%";
-      primary['max-height'] = "27%";
-      primary['alignSelf'] = "flex-start";
-      primary['margin-top'] = "3em";
-      primary['margin-left'] = "1em";
+      linkPrimary['max-width'] = "30%";
+      linkPrimary['max-height'] = "27%";
+      linkPrimary['alignSelf'] = "flex-start";
+      linkPrimary['margin-top'] = "3em";
+      linkPrimary['margin-left'] = "1em";
     } else {
-      primary['flex'] = `0 1 auto`;
-      primary['max-height'] = "35.5em";
-      primary['max-width'] = "44%";
-      primary['margin-left'] = "13em";
-      primary['margin-bottom'] = "1em";
-      primary['padding'] = "1em 0 1em 0";
+      linkPrimary['flex'] = `0 1 auto`;
+      linkPrimary['max-height'] = "35.5em";
+      linkPrimary['max-width'] = "44%";
+      linkPrimary['margin-left'] = "13em";
+      linkPrimary['margin-bottom'] = "1em";
+      linkPrimary['padding'] = "1em 0 1em 0";
     }
 
-    foop['image' + i] = primary;
+    foop['link' + i] = linkPrimary;
+    foop['image' + i] = imagePrimary;
   }
 
   let bizz = {
@@ -66,7 +65,7 @@ var styles = cssInJS((context) => {
 
   for (let i = 0; i<32; i++) {
     if (i != 0) {
-    bizz['image' + i] = {
+    bizz['link' + i] = {
       //maxHeight: '7em'
       maxWidth: '28%'
       //width: `40%`,
@@ -117,6 +116,17 @@ class App extends React.Component {
     }
   }
 
+  onLoad(newImage, ev) {
+    if (ev) {
+      ev.preventDefault();
+    }
+
+    if (ev.target) {
+      ev.target.removeAttribute("width");
+      ev.target.removeAttribute("height");
+    }
+  }
+
   async onFoo(newImage, ev) {
     if (ev) {
       ev.preventDefault();
@@ -141,17 +151,18 @@ class App extends React.Component {
     let otherImages = null;
     let firstImage = null;
     let fooop = null;
+    let buildDir = "/home/ubuntu/pictwourd/build/";
 
     if (manifestIndexJson && manifestIndexJson[this.state.activeImage]) {
-      newUrl = manifestIndexJson[this.state.activeImage]["filename"].replace("/home/ubuntu/pictwourd/build/", "");
+      newUrl = manifestIndexJson[this.state.activeImage]["filename"].replace(buildDir, "");
 
-      //let manifestIndexJson = this.state.manifestIndexJson;
       let relatedImages = this.state.relatedImages;
 
       let filterFunA = (otherImage, index) => {
         let r = {};
-        r['otherUrl'] = manifestIndexJson[otherImage.indexNumber]["filename"].replace("/home/ubuntu/pictwourd/build/", "");
-        r['style'] = styles['image' + index];
+        r['otherUrl'] = manifestIndexJson[otherImage.indexNumber]["filename"].replace(buildDir, "");
+        r['istyle'] = styles['image' + index];
+        r['lstyle'] = styles['link' + index];
         r['newIndex'] = otherImage.indexNumber;
         return r;
       };
@@ -166,27 +177,31 @@ class App extends React.Component {
             relatedImages.map(filterFunA).map((otherImage, index) => {
               let extraStyle = { };
 
-              let img = (
-                <img 
-                  key={otherImage['otherUrl']} 
-                  style={extraStyle} className={otherImage['style']}
-                  src={otherImage['otherUrl']}
-                  onClick={this.onFoo.bind(this, otherImage['newIndex'])}
-                />
-              );
-
-              let span = null
-
               if (index == 0) {
-                //extraStyle['border'] = "0.1em solid " + color;
                 extraStyle['borderLeft'] = "0.33em solid " + alternativeColor;
                 extraStyle['paddingLeft'] = "2em";
-                span = (img);
-              } else {
-                span = (img);
               }
 
-              return (span);
+              let img = (
+                <a 
+                  key={otherImage['otherUrl']} 
+                  style={extraStyle}
+                  className={otherImage['lstyle']}
+                  href={`?${otherImage['newIndex']}#prime`}
+                  onClick={this.onFoo.bind(this, otherImage['newIndex'])}>
+                  <img 
+                    className={otherImage['istyle']}
+                    src={otherImage['otherUrl']}
+                    
+                  />
+                </a>
+              );
+
+                    //onLoad={this.onLoad.bind(this, otherImage['newIndex'])}
+                    //width={256}
+                    //height={256}
+
+              return (img);
             })
           );
         };
