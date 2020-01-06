@@ -37,11 +37,17 @@ public class Pictwourd {
             System.exit (1);
         }
 
+        File indexManifestDir = new File ("build/index.manifest");
+        if (!indexManifestDir.exists()) {
+          if (!indexManifestDir.mkdir ()) {
+            System.out.println("wtf");
+            System.exit(1);
+          }
+        }
 
         boolean shouldReindexImages = true;
         boolean shouldSearchImages = true;
         boolean shouldManifestImages = true;
-
 
         ParallelIndexer pin = new ParallelIndexer (numOfThreads, indexPath, imagesPath);
 
@@ -55,14 +61,14 @@ public class Pictwourd {
         pin.addExtractor (CEDD.class);
 
 /*
-    pin.addExtractor(JCD.class);
-    pin.addExtractor(ScalableColor.class);
-    pin.addExtractor(EdgeHistogram.class);
-    pin.addExtractor(Gabor.class);
-    pin.addExtractor(SimpleColorHistogram.class);
-    pin.addExtractor(OpponentHistogram.class);
-    pin.addExtractor(LuminanceLayout.class);
-    pin.addExtractor(PHOG.class);
+        pin.addExtractor(JCD.class);
+        pin.addExtractor(ScalableColor.class);
+        pin.addExtractor(EdgeHistogram.class);
+        pin.addExtractor(Gabor.class);
+        pin.addExtractor(SimpleColorHistogram.class);
+        pin.addExtractor(OpponentHistogram.class);
+        pin.addExtractor(LuminanceLayout.class);
+        pin.addExtractor(PHOG.class);
 */
 
         //pin.addExtractor(ACCID.class);
@@ -88,12 +94,13 @@ public class Pictwourd {
         System.out.println ("---< searching >-------------------------");
         IndexReader reader = DirectoryReader.open (FSDirectory.open (Paths.get (indexPath)));
 
-        ParallelSearcher search = new ParallelSearcher (reader);
+        ParallelSearcher search = new ParallelSearcher (numOfThreads, reader);
 
         if (shouldSearchImages) {
             Thread t = new Thread (search);
             t.start ();
             while (! search.hasEnded ()) {
+                System.out.println ("---< searching >-------------------------");
                 Thread.sleep (3000);
             }
             try {
@@ -104,18 +111,15 @@ public class Pictwourd {
         }
 
         if (shouldManifestImages) {
-            File indexManifestDir = new File ("build/index.manifest");
-            if (indexManifestDir.mkdir ()) {
-                Writer writer = new BufferedWriter (
-                    new OutputStreamWriter (
-                        new FileOutputStream ("build/index.manifest/manifest.json")
-                    )
-                );
+            Writer writer = new BufferedWriter (
+                new OutputStreamWriter (
+                    new FileOutputStream ("build/index.manifest/manifest.json")
+                )
+            );
 
-                Gson gson = new Gson ();
-                writer.write (gson.toJson (search.getRawIndex ()));
-                writer.close ();
-            }
+            Gson gson = new Gson ();
+            writer.write (gson.toJson (search.getRawIndex ()));
+            writer.close ();
         }
 
         System.exit (0);

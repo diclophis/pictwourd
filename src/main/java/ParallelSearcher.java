@@ -28,12 +28,13 @@ class ParallelSearcher implements Runnable {
     private final int queueCapacity = 1024;
     private final LinkedBlockingQueue<ParallelSearcher.WorkItem> queue = new LinkedBlockingQueue<> (queueCapacity);
 
-    private final int numOfThreads = 64;
+    private int numOfThreads = -1;
 
     private final List<Integer> allImageIds;
     private final ArrayList<Hashtable<String, String>> rawIndex;
 
-    public ParallelSearcher (IndexReader inIndexReader) {
+    public ParallelSearcher (int numOfThreads, IndexReader inIndexReader) {
+        this.numOfThreads = numOfThreads;
         indexReader = inIndexReader;
 
         allImageIds = new ArrayList<> ();
@@ -161,11 +162,11 @@ class ParallelSearcher implements Runnable {
                         //ImageSearcher searcher = new GenericFastImageSearcher(32, AutoColorCorrelogram.class, true, this.indexReader);
                         //ImageSearcher searcher = new GenericFastImageSearcher(32, CEDD.class, true, this.indexReader);
                         //ImageSearcher searcher = new GenericFastImageSearcher(32, Tamura.class, true, this.indexReader);
-                        ImageSearcher searcher = new GenericFastImageSearcher (32, FCTH.class, true, indexReader);
+                        ImageSearcher searcher = new GenericFastImageSearcher (8, FCTH.class, true, indexReader);
                         ImageSearchHits hits = searcher.search (document, indexReader);
 
                         // rerank
-                        //System.out.println("---< filtering >-------------------------");
+                        System.out.println("---< filtering >-------------------------");
 
                         //RerankFilter filter = new RerankFilter(ColorLayout.class, DocumentBuilder.FIELD_NAME_COLORLAYOUT);
                         RerankFilter filter = new RerankFilter (CEDD.class, DocumentBuilder.FIELD_NAME_CEDD);
@@ -177,7 +178,6 @@ class ParallelSearcher implements Runnable {
                         int width = bimg.getWidth ();
                         int height = bimg.getHeight ();
 
-
                         localListFull.get (tmp.getFileNameId ()).put ("width", String.format ("%d", width));
                         localListFull.get (tmp.getFileNameId ()).put ("height", String.format ("%d", height));
 
@@ -187,9 +187,15 @@ class ParallelSearcher implements Runnable {
 
                         writer.write (gson.toJson (hits));
                         writer.close ();
+
+                        System.out.println("---< done >-------------------------");
                     }
                 } catch (InterruptedException e) {
+                  e.printStackTrace ();
+                  System.exit(1);
                 } catch (Exception e) {
+                  e.printStackTrace ();
+                  System.exit(1);
                 }
             }
         }
