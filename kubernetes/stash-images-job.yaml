@@ -17,6 +17,7 @@ spec:
         image: pictwourd:latest
         imagePullPolicy: IfNotPresent
         #	env JAVA_OPTS="-Xmx3600m" sbt "run $(ATTIC)"
+        # sbt "run /mnt/gaia/pictwourd/stashed/index.attic"
         #command:
         #- ruby
         #- exec

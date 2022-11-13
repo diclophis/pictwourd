@@ -23,17 +23,18 @@ all:
 
 pipeline: fetch
 
-reset:
-	rm -Rf $(BUILD)/index $(BUILD)/index.config $(BUILD)/index.manifest
+#TODO
+#reset:
+#	rm -Rf $(BUILD)/index $(BUILD)/index.config $(BUILD)/index.manifest
 
-$(BUILD)/index.attic/%.rsync: stash
-	rsync -azPr $(BUILD)/index.attic/$* ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/index.attic
+#$(BUILD)/index.attic/%.rsync: stash
+#	rsync -azPr $(BUILD)/index.attic/$* ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/index.attic
 
-just-fetch:
-	rm -Rf $(BUILD)/*js $(BUILD)/*html
-	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; rm -Rf rm -Rf $(BUILD)/*js $(BUILD)/*html; npm run build && npm run pack'
-	rsync -azPr ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/{*.html,*js,*css} $(BUILD)
-	firefox http://localhost:8000
+#just-fetch:
+#	rm -Rf $(BUILD)/*js $(BUILD)/*html
+#	ssh -t ubuntu@ops.bardin.haus 'cd /home/ubuntu/pictwourd; rm -Rf rm -Rf $(BUILD)/*js $(BUILD)/*html; npm run build && npm run pack'
+#	rsync -azPr ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/{*.html,*js,*css} $(BUILD)
+#	firefox http://localhost:8000
 
 fetch: index $(BOXES)
 	rm -Rf $(BUILD)/*js $(BUILD)/*html
@@ -50,11 +51,11 @@ fetch: index $(BOXES)
 #	env JAVA_OPTS="-Xmx3600m" sbt "run $(ATTIC)"
 #	echo -n Syncing Index && rsync -azPr --exclude build/index.attic build ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd
 
-clean:
-	rm -Rf $(BUILD)
+#clean:
+#	rm -Rf $(BUILD)
 
-image:
-	docker build -f Dockerfile -t $(IMAGE) .
+#image:
+#	docker build -f Dockerfile -t $(IMAGE) .
 
-$(BUILD)/$(IMAGE_TAG): image
-	touch $(BUILD)/$(IMAGE_TAG)
+#$(BUILD)/$(IMAGE_TAG): image
+#	touch $(BUILD)/$(IMAGE_TAG)
