@@ -16,10 +16,10 @@ import static java.lang.String.*;
 
 public class Pictwourd {
     public static void main (String[] args) throws Exception {
-        String indexPath = "build/index";
+        String indexPath = "/mnt/gaia/pictwourd/stashed/index";
         String imagesPath = null;
 
-        int numOfThreads = 16; // the number of thread used.
+        int numOfThreads = 1; // the number of thread used.
 
         // Checking if arg[0] is there and if it is a directory.
         boolean passed = false;
@@ -37,7 +37,7 @@ public class Pictwourd {
             System.exit (1);
         }
 
-        File indexManifestDir = new File ("build/index.manifest");
+        File indexManifestDir = new File ("/mnt/gaia/pictwourd/stashed/index.manifest");
         if (!indexManifestDir.exists()) {
           if (!indexManifestDir.mkdir ()) {
             System.out.println("wtf");
@@ -113,7 +113,7 @@ public class Pictwourd {
         if (shouldManifestImages) {
             Writer writer = new BufferedWriter (
                 new OutputStreamWriter (
-                    new FileOutputStream ("build/index.manifest/manifest.json")
+                    new FileOutputStream ("/mnt/gaia/pictwourd/stashed/index.manifest/manifest.json")
                 )
             );
 

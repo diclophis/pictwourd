@@ -1,5 +1,13 @@
-FROM anapsix/alpine-java
+#FROM anapsix/alpine-java
+#
+#ADD lib /opt/lib
+#
+#CMD ["java", "-h"]
 
-ADD lib /opt/lib
+#FROM sbtscala/scala-sbt:eclipse-temurin-18.0.2_1.8.0_3.2.0
+#FROM sbtscala/scala-sbt:eclipse-temurin-11.0.16_1.8.0_3.2.0
+FROM sbtscala/scala-sbt:openjdk-17.0.2_1.8.0_3.2.0
 
-CMD ["java", "-h"]
+ADD . /opt/build
+
+RUN cd /opt/build && sbt compile

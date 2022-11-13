@@ -11,6 +11,8 @@ crossPaths := false
 autoScalaLibrary := false
 
 
+mainClass in (Compile,run) := Some("Pictwourd")
+
 //commons-codec-1.10.jar
 //commons-io-2.4.jar
 //commons-math3-3.2.jar

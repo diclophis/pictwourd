@@ -1,0 +1,40 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pictwourd-reindex-images
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      volumes:
+      - name: pictwourd-index-fs
+        hostPath:
+          path: /mnt/gaia/pictwourd
+          type: DirectoryOrCreate
+      containers:
+      - name: stash-images
+        image: pictwourd:latest
+        imagePullPolicy: IfNotPresent
+        #	env JAVA_OPTS="-Xmx3600m" sbt "run $(ATTIC)"
+        #command:
+        #- ruby
+        #- exec
+        #- rake
+        #- schema
+        command:
+        - sleep
+        - infinity
+        volumeMounts:
+        - name: pictwourd-index-fs
+          mountPath: /mnt/gaia/pictwourd
+        env:
+        - name: JAVA_OPTS
+          value: "-Xmx5000m"
+        resources:
+          limits:
+            memory: 5100M
+            cpu: 1000m
+          requests:
+            memory: 100M
+            cpu: 10m

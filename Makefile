@@ -41,12 +41,14 @@ fetch: index $(BOXES)
 	rsync -azPr ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd/build/{*.html,*js,*css} $(BUILD)
 	firefox http://localhost:8000
 
-stash:
-	ruby stash-images.rb "$(INCOMING)"
+#001
+#stash:
+#	ruby stash-images.rb "$(INCOMING)"
 
-index: stash
-	env JAVA_OPTS="-Xmx3600m" sbt "run $(ATTIC)"
-	echo -n Syncing Index && rsync -azPr --exclude build/index.attic build ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd
+#002
+#index: stash
+#	env JAVA_OPTS="-Xmx3600m" sbt "run $(ATTIC)"
+#	echo -n Syncing Index && rsync -azPr --exclude build/index.attic build ubuntu@ops.bardin.haus:/home/ubuntu/pictwourd
 
 clean:
 	rm -Rf $(BUILD)

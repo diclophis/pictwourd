@@ -181,7 +181,7 @@ class ParallelSearcher implements Runnable {
                         localListFull.get (tmp.getFileNameId ()).put ("width", String.format ("%d", width));
                         localListFull.get (tmp.getFileNameId ()).put ("height", String.format ("%d", height));
 
-                        Writer writer = new BufferedWriter (new OutputStreamWriter (new FileOutputStream (String.format ("build/index.manifest/%d.json", tmp.getFileNameId ()))));
+                        Writer writer = new BufferedWriter (new OutputStreamWriter (new FileOutputStream (String.format ("/mnt/gaia/pictwourd/stash/index.manifest/%d.json", tmp.getFileNameId ()))));
 
 //java.util.stream.Stream foop = Hash.stream(hits); //.stream();
 
