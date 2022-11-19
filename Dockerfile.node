@@ -1,0 +1,9 @@
+FROM node:16.18-bullseye
+
+ADD package.json package-lock.json /opt/build/
+
+RUN cd /opt/build && npm install
+
+ADD . /opt/build
+
+CMD ["/bin/bash"]
