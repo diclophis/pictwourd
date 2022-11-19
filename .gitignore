@@ -57,3 +57,5 @@ project/plugins/project/
 *.overrides.conf
 
 .DS_Store
+
+*.swp

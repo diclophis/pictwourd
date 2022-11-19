@@ -6,4 +6,10 @@ RUN cd /opt/build && npm install
 
 ADD . /opt/build
 
+WORKDIR /opt/build
+
+RUN npm run build
+
+RUN npm run pack
+
 CMD ["/bin/bash"]
