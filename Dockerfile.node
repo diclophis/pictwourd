@@ -1,3 +1,4 @@
+#FROM node:14.21-bullseye
 FROM node:16.18-bullseye
 
 ADD package.json package-lock.json /opt/build/
@@ -8,8 +9,8 @@ ADD . /opt/build
 
 WORKDIR /opt/build
 
-RUN npm run build
-
-RUN npm run pack
+#RUN npm run build
+#
+#RUN npm run pack
 
 CMD ["/bin/bash"]
