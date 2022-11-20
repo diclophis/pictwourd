@@ -24,8 +24,8 @@ spec:
         #- rake
         #- schema
         command:
-        - sleep
-        - infinity
+        - sbt
+        - "run /mnt/gaia/pictwourd/stashed/index.attic"
         volumeMounts:
         - name: pictwourd-index-fs
           mountPath: /mnt/gaia/pictwourd

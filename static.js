@@ -1,7 +1,7 @@
 import React from 'react';
 import ImagePalette from 'react-image-palette';
 
-import manifestIndexJson from './build/index.manifest/manifest.json';
+import manifestIndexJson from '/mnt/gaia/pictwourd/stashed/index.manifest/manifest.json';
 
 var styles = cssInJS((context) => {
   let vvv = 28;
@@ -25,31 +25,32 @@ var styles = cssInJS((context) => {
 
   for (let i = 0; i<32; i++) {
     let newHeight = vvv - 17 - (i * 1.75);
+
     if (newHeight < 5) {
       newHeight = 5;
     }
 
     let linkPrimary = {
-        order: 0,
-        margin: "0.5em",
-        alignSelf: "auto"
+      order: 0,
+      margin: "0.5em",
+      alignSelf: "auto"
     }
 
     let imagePrimary = {
-        maxWidth: '100%',
-        alignSelf: "auto",
+      maxWidth: '100%',
+      alignSelf: "auto",
     }
 
-    if (i !=0) {
-      linkPrimary['max-width'] = "30%";
-      linkPrimary['max-height'] = "27%";
+    if (i != 0) {
+      linkPrimary['max-width'] = "15em";
+      linkPrimary['max-height'] = "10em";
       linkPrimary['alignSelf'] = "flex-start";
       linkPrimary['margin-top'] = "3em";
       linkPrimary['margin-left'] = "1em";
     } else {
       linkPrimary['flex'] = `0 1 auto`;
-      linkPrimary['max-height'] = "35.5em";
-      linkPrimary['max-width'] = "44%";
+      linkPrimary['max-height'] = "100%";
+      linkPrimary['max-width'] = "33em";
       linkPrimary['margin-left'] = "13em";
       linkPrimary['margin-bottom'] = "1em";
       linkPrimary['padding'] = "1em 0 1em 0";
@@ -61,7 +62,6 @@ var styles = cssInJS((context) => {
 
   let bizz = {
   }
-
 
   for (let i = 0; i<32; i++) {
     if (i != 0) {
@@ -134,7 +134,7 @@ class App extends React.Component {
 
     let randomInt = (newImage === false ? (parseInt(Math.random() * manifestIndexJson.length)) : newImage);
     let jsonFileToLoad = './' + randomInt.toString() + '.json'
-    let otherJson = await import(`./build/index.manifest/${randomInt}.json`);
+    let otherJson = await import(`/mnt/gaia/pictwourd/stashed/index.manifest/${randomInt}.json`);
 
 		var stateObj = {
 			relatedImages: otherJson['results'],
@@ -151,7 +151,7 @@ class App extends React.Component {
     let otherImages = null;
     let firstImage = null;
     let fooop = null;
-    let buildDir = "/home/ubuntu/pictwourd/build/";
+    let buildDir = "/mnt/gaia/pictwourd";
 
     if (manifestIndexJson && manifestIndexJson[this.state.activeImage]) {
       newUrl = manifestIndexJson[this.state.activeImage]["filename"].replace(buildDir, "");
@@ -175,6 +175,8 @@ class App extends React.Component {
         fooop = (color, alternativeColor) => {
           return (
             relatedImages.map(filterFunA).map((otherImage, index) => {
+              if (index > 3) { return null; }
+
               let extraStyle = { };
 
               if (index == 0) {
@@ -214,16 +216,13 @@ class App extends React.Component {
           {({ backgroundColor, color, alternativeColor }) => {
             this.lastDefaultColors = { backgroundColor: backgroundColor, color: color, alternativeColor: alternativeColor};
 						return (
-							<div ref={node => this.prime = node} id="prime" style={{backgroundColor, color, transition: "background-color 1s" }}>
+							<div ref={node => this.prime = node} id="prime" style={{ backgroundColor, color, transition: "background-color 1s", height: "100%" }}>
 								<p style={{margin: "1em", width: "11em", float: "left", position: "absolute"}}>
 									<h1 style={{margin: 0}}>
 										<a 
                       onClick={this.onFoo.bind(this, false)}
-                      style={{ color }} href="?">?</a>{firstImage['newIndex']}
+                      style={{ color }} href="?">???</a>{firstImage['newIndex']}
 									</h1>
-                  <span>foo</span><br/>
-                  <span>bar</span><br/>
-                  <span>baz</span><br/>
 								</p>
 								<div className={styles.flexContainer}>
 									{fooop(color, alternativeColor)}

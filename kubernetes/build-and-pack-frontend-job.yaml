@@ -1,0 +1,111 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pictwourd-build-pack
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        pictwourd: build
+    spec:
+      restartPolicy: Never
+      volumes:
+      - name: pictwourd-index-fs
+        hostPath:
+          path: /mnt/gaia/pictwourd
+          type: DirectoryOrCreate
+      - name: build
+        emptyDir: {}
+      initContainers:
+      - name: clean
+        image: pictwourd-node:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - "rm"
+        - "-Rf"
+        - "/mnt/gaia/pictwourd/build"
+        volumeMounts:
+        - name: build
+          mountPath: /opt/build/build
+        - name: pictwourd-index-fs
+          mountPath: /mnt/gaia/pictwourd
+        env:
+        - name: JAVA_OPTS
+          value: "-Xmx5000m"
+        resources:
+          limits:
+            memory: 5100M
+            cpu: 1000m
+          requests:
+            memory: 100M
+            cpu: 10m
+      - name: build
+        image: pictwourd-node:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - npm
+        - run
+        - build
+        volumeMounts:
+        - name: build
+          mountPath: /opt/build/build
+        - name: pictwourd-index-fs
+          mountPath: /mnt/gaia/pictwourd
+        env:
+        - name: JAVA_OPTS
+          value: "-Xmx5000m"
+        resources:
+          limits:
+            memory: 5100M
+            cpu: 1000m
+          requests:
+            memory: 100M
+            cpu: 10m
+      - name: pack
+        image: pictwourd-node:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - npm
+        - run
+        - pack
+        volumeMounts:
+        - name: build
+          mountPath: /opt/build/build
+        - name: pictwourd-index-fs
+          mountPath: /mnt/gaia/pictwourd
+        env:
+        - name: JAVA_OPTS
+          value: "-Xmx5000m"
+        resources:
+          limits:
+            memory: 5100M
+            cpu: 1000m
+          requests:
+            memory: 100M
+            cpu: 10m
+      containers:
+      - name: crosscheck
+        image: pictwourd:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - "cp"
+        - "-R"
+        - "/opt/build/build"
+        - "/mnt/gaia/pictwourd/build"
+        volumeMounts:
+        - name: build
+          mountPath: /opt/build/build
+        - name: pictwourd-index-fs
+          mountPath: /mnt/gaia/pictwourd
+        env:
+        - name: JAVA_OPTS
+          value: "-Xmx5000m"
+        resources:
+          limits:
+            memory: 5100M
+            cpu: 1000m
+          requests:
+            memory: 100M
+            cpu: 10m

@@ -1,0 +1,80 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pictwourd-static-web-server
+  labels:
+    pictwourd: static-web-server
+spec:
+  selector:
+    matchLabels:
+      pictwourd: static-web-server
+  template:
+    metadata:
+      labels:
+        pictwourd: static-web-server
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: pictwourd-index-fs
+        hostPath:
+          path: /mnt/gaia/pictwourd
+          type: DirectoryOrCreate
+      containers:
+      - name: static-web-server
+        image: pictwourd-node:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - "python3"
+        - "-m"
+        - "http.server"
+        - "--directory"
+        - "/mnt/gaia/pictwourd"
+        - "8000"
+        volumeMounts:
+        - name: pictwourd-index-fs
+          mountPath: /mnt/gaia/pictwourd
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+          name: http
+        resources:
+          limits:
+            memory: 5100M
+            cpu: 1000m
+          requests:
+            memory: 100M
+            cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  name: pictwourd-service
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    nodePort: 31343
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    pictwourd: static-web-server
+  sessionAffinity: None
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.class: wkndr
+  name: pictwourd-static-web-vhost
+spec:
+  rules:
+  - host: pictwourd.bardin.haus
+    http:
+      paths:
+      - backend:
+          serviceName: pictwourd-service
+          servicePort: 8000
