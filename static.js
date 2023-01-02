@@ -160,6 +160,9 @@ class App extends React.Component {
 
       let filterFunA = (otherImage, index) => {
         let r = {};
+        r['width'] = manifestIndexJson[otherImage.indexNumber]["width"];
+        r['height'] = manifestIndexJson[otherImage.indexNumber]["height"];
+
         r['otherUrl'] = manifestIndexJson[otherImage.indexNumber]["filename"].replace(buildDir, "");
         r['istyle'] = styles['image' + index];
         r['lstyle'] = styles['link' + index];
@@ -168,13 +171,15 @@ class App extends React.Component {
       };
 
       if (relatedImages) {
-        firstImage = relatedImages.map(filterFunA).find((otherImage, index) => {
+        let filteredRelatedImages = relatedImages.map(filterFunA);
+
+        firstImage = filteredRelatedImages.find((otherImage, index) => {
           return (index == 0);
         });
 
         fooop = (color, alternativeColor) => {
           return (
-            relatedImages.map(filterFunA).map((otherImage, index) => {
+            filteredRelatedImages.map((otherImage, index) => {
               if (index > 3) { return null; }
 
               let extraStyle = { };
@@ -192,9 +197,10 @@ class App extends React.Component {
                   href={`?${otherImage['newIndex']}#prime`}
                   onClick={this.onFoo.bind(this, otherImage['newIndex'])}>
                   <img 
+                    width={otherImage['width']}
+                    height={otherImage['height']}
                     className={otherImage['istyle']}
                     src={otherImage['otherUrl']}
-                    
                   />
                 </a>
               );
