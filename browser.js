@@ -1,9 +1,9 @@
 //
-console.log("browser javascript starts here")
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { App, Html } from './static';
+
+import App from './static';
 
 const initialData = { initialImage: parseInt(window.location.search.replace("?", "")) || false };
 

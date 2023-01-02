@@ -1,3 +1,5 @@
+//
+
 import React from 'react';
 import ImagePalette from 'react-image-palette';
 
@@ -197,17 +199,13 @@ class App extends React.Component {
                   href={`?${otherImage['newIndex']}#prime`}
                   onClick={this.onFoo.bind(this, otherImage['newIndex'])}>
                   <img 
-                    width={otherImage['width']}
-                    height={otherImage['height']}
+                    alt="foobar"
+                    width={parseInt(otherImage['width'])}
                     className={otherImage['istyle']}
                     src={otherImage['otherUrl']}
                   />
                 </a>
               );
-
-                    //onLoad={this.onLoad.bind(this, otherImage['newIndex'])}
-                    //width={256}
-                    //height={256}
 
               return (img);
             })
@@ -252,20 +250,4 @@ class App extends React.Component {
   }
 }
 
-// pure functional is cooler?
-const Html = (props) => {
-  return (
-    <html>
-      <head>
-        <meta httpEquiv="Content-Type" content="text/html;charset=utf-8"/>
-        <title>App</title>
-        <link rel="stylesheet" href="bundle.css"/>
-      </head>
-      <body>
-        <div id="app">{props.children}</div>
-      </body>
-    </html>
-  );
-};
-
-export { App, Html };
+export default App;
